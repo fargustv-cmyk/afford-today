@@ -9,10 +9,9 @@ RUN npm install --no-audit --no-fund
 
 FROM node:20-alpine AS build
 WORKDIR /repo
+# npm workspaces hoist deps into the root node_modules; per-workspace dirs may
+# not exist, so only copy the root one.
 COPY --from=deps /repo/node_modules ./node_modules
-COPY --from=deps /repo/shared/node_modules ./shared/node_modules
-COPY --from=deps /repo/api/node_modules ./api/node_modules
-COPY --from=deps /repo/app/node_modules ./app/node_modules
 COPY . .
 RUN npm run build:shared && npm run build:app && npm run build:api
 
