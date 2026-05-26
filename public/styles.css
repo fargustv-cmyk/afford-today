@@ -118,6 +118,28 @@ main {
 }
 .icon-btn:active { background: var(--surface-2); }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lang-btn {
+  height: 38px;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: 19px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-btn:active { background: var(--surface-2); color: var(--text); }
+
 /* ───────── current goal card ───────── */
 
 .goal-card {
