@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import type { MeResponse } from '@afford/shared';
 import { tg } from './telegram';
 import { ru } from './i18n/ru';
+import { api } from './api/client';
+import { isPreview, mockMe } from './lib/preview';
+import { Home } from './screens/Home';
 
 type State =
   | { kind: 'loading' }
@@ -13,32 +16,10 @@ export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });
 
   useEffect(() => {
-    // Browser preview mode (?preview=1): skip server auth so the design can
-    // be inspected without going through Telegram. Server stays strict — this
-    // is purely client-side.
-    const previewMode = new URLSearchParams(window.location.search).get('preview') === '1';
-    if (previewMode) {
-      setState({
-        kind: 'authed',
-        me: {
-          unlocked: false,
-          user: {
-            id: 0,
-            createdAt: new Date().toISOString(),
-            currency: 'RUB',
-            locale: 'ru',
-            subscriptionStatus: 'free',
-            subscriptionUntil: null,
-            giftedTokens: 0,
-            selfPermissionFactor: 1,
-            settings: {},
-            firstName: 'preview'
-          }
-        }
-      });
+    if (isPreview()) {
+      setState({ kind: 'authed', me: mockMe });
       return;
     }
-
     if (!tg) {
       setState({ kind: 'no-telegram' });
       return;
@@ -46,42 +27,30 @@ export function App() {
     tg.ready();
     tg.expand();
 
-    fetch('/api/me', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: tg.initData ?? '' })
-    })
-      .then(async (r) => {
-        if (r.status === 401) {
-          setState({ kind: 'unauthorized' });
-          return;
-        }
-        const data = (await r.json()) as MeResponse;
-        setState({ kind: 'authed', me: data });
-      })
-      .catch(() => setState({ kind: 'unauthorized' }));
+    api
+      .me()
+      .then((me) => setState({ kind: 'authed', me }))
+      .catch((err: unknown) => {
+        const e = err as { status?: number } | undefined;
+        if (e?.status === 401) setState({ kind: 'unauthorized' });
+        else setState({ kind: 'unauthorized' });
+      });
   }, []);
+
+  if (state.kind === 'authed') {
+    return <Home />;
+  }
 
   return (
     <main className="shell">
       <Seal />
-      <h1 className="title">afford.today</h1>
+      <h1 className="title-serif">afford.today</h1>
       <p className="sub">{ru.scaffold_subtitle}</p>
 
       <section className="status-card">
         {state.kind === 'loading' && <p className="status">{ru.scaffold_loading}</p>}
         {state.kind === 'no-telegram' && <p className="status">{ru.scaffold_no_telegram}</p>}
         {state.kind === 'unauthorized' && <p className="status">{ru.scaffold_unauthorized}</p>}
-        {state.kind === 'authed' && (
-          <>
-            <p className="status">
-              {ru.scaffold_greet.replace('{name}', state.me.user.firstName ?? 'друг')}
-            </p>
-            <p className="muted">
-              id · {state.me.user.id} · locale {state.me.user.locale} · {state.me.user.currency}
-            </p>
-          </>
-        )}
       </section>
     </main>
   );

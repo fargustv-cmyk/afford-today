@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { env, assertProductionEnv } from './env.js';
 import { authRoutes } from './routes/auth.js';
+import { wishesRoutes } from './routes/wishes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +20,7 @@ async function buildApp() {
   });
 
   await app.register(authRoutes);
+  await app.register(wishesRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 

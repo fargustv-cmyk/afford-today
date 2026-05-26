@@ -95,3 +95,19 @@ export interface MeResponse {
   user: User;
   unlocked: boolean; // Pro / subscription flag, used by client to gate paid features
 }
+
+export interface CreateWishInput {
+  title: string;
+  price?: number | null;
+  sourceUrl?: string | null;
+  imageUrl?: string | null;
+  type: WishType;
+  domain: LifeDomain;
+  currency?: string;
+}
+
+export interface OgPreview {
+  title: string | null;
+  imageUrl: string | null;
+  price: number | null;
+}
