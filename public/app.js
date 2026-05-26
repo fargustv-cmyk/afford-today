@@ -19,7 +19,7 @@ const I18N = {
     'greeting.afternoon': 'Добрый день',
     'greeting.evening': 'Добрый вечер',
     'greeting.night': 'Поздняя ночь',
-    'screen.dashboard': 'Дашборд',
+    'screen.dashboard': 'Главная',
     'screen.tasks': 'Задачи',
     'screen.reward': 'Награды',
     'nav.home': 'Главная',
@@ -30,16 +30,21 @@ const I18N = {
     'section.up_next': 'Следующее',
     'section.view_all': 'Все',
     'section.all_tasks': 'Все задачи',
+    'section.history': 'История разрешений',
     'goal.level': 'Уровень {level} · ещё {remaining} оч.',
+    'goal.unlocked_hint': 'Ты заработал разрешение',
+    'goal.btn_mark_bought': 'Я купил это',
+    'goal.btn_add_task': '＋ Добавить задачу',
     'stat.tasks': 'Задачи',
     'stat.points': 'Очки',
     'stat.streak': 'Стрик',
     'empty.no_goal.title': 'Пока нет цели',
     'empty.no_goal.body': 'Добавь первое желание — носки, книгу, наушники. Что угодно, что ты себе пока не разрешил.',
-    'empty.done_today.title': 'На сегодня всё',
-    'empty.done_today.body': 'Шкала ждёт. Добавь задач, чтобы прокликать ещё очки.',
-    'empty.no_tasks.title': 'Задач пока нет',
-    'empty.no_tasks.body': 'Добавляй простые шаги к цели — от «помыть посуду» до «закрыть проект».',
+    'empty.no_goal.cta': '＋ Добавить первую цель',
+    'empty.no_tasks.title': 'Нет задач',
+    'empty.no_tasks.body': 'Добавь простые шаги — от «помыть посуду» до «закрыть проект». За каждый получаешь очки.',
+    'empty.no_freedom.title': 'Пока пусто',
+    'empty.no_freedom.body': 'Когда отметишь первую покупку — она появится на карте свободы.',
     'reward.title': 'Счёт свободы',
     'reward.allowed': 'позволено',
     'domain.clothing': 'Одежда',
@@ -49,18 +54,45 @@ const I18N = {
     'domain.pleasure': 'Удовольствие',
     'domain.other': 'Другое',
     'toast.points': '+{n} очков',
+    'toast.goal_added': 'Цель добавлена',
+    'toast.task_added': 'Задача добавлена',
+    'toast.bought': 'Записано в твою карту свободы',
     'unlock.title': 'Можно!',
-    'unlock.sub': 'Ты заслужил {name}. Открывай магазин, оформляй покупку, возвращайся.',
+    'unlock.sub': 'Ты заслужил {name}. Открывай магазин, оформляй покупку, возвращайся и нажми «Я купил это».',
     'unlock.btn': 'Принять разрешение',
     'task.pts': 'оч',
     'task.cat.work': 'Работа',
     'task.cat.health': 'Здоровье',
     'task.cat.home': 'Дом',
-    'sample.task.proposal': 'Закончить предложение клиенту',
-    'sample.task.workout': '30 мин тренировки',
-    'sample.task.kitchen': 'Убрать кухню',
+    'add_goal.title': 'Новая цель',
+    'add_goal.name': 'Что хочешь?',
+    'add_goal.name_placeholder': 'Например: Sony WH-1000XM5',
+    'add_goal.price': 'Цена',
+    'add_goal.price_placeholder': '25000',
+    'add_goal.type': 'Тип',
+    'add_goal.type_need': 'Нужное',
+    'add_goal.type_want': 'Хотелка',
+    'add_goal.domain': 'Категория',
+    'add_goal.save': 'Создать',
+    'add_task.title': 'Новая задача',
+    'add_task.name': 'Что сделать?',
+    'add_task.name_placeholder': 'Например: 30 мин прогулки',
+    'add_task.points': 'Сложность',
+    'add_task.points_small': 'Мелкая · 10',
+    'add_task.points_mid': 'Средняя · 25',
+    'add_task.points_big': 'Крупная · 50',
+    'add_task.save': 'Добавить',
+    'reflect.title': 'Как ощущается?',
+    'reflect.sub': 'Это тренировка кнопки «мне можно». Никаких правильных ответов.',
+    'reflect.good': 'Хорошо',
+    'reflect.okay': 'Норм',
+    'reflect.guilty': 'Стыдно',
+    'reflect.note_placeholder': 'Что-то добавить? (необязательно)',
+    'reflect.save': 'Готово',
     'settings.title': 'Настройки',
-    'lang.toggle': 'EN'
+    'lang.toggle': 'EN',
+    'common.cancel': 'Отмена',
+    'common.delete': 'Удалить'
   },
   en: {
     'greeting.morning': 'Good morning',
@@ -78,16 +110,21 @@ const I18N = {
     'section.up_next': 'Up next',
     'section.view_all': 'View all',
     'section.all_tasks': 'All tasks',
+    'section.history': 'Permission history',
     'goal.level': 'Level {level} · {remaining} points to go',
+    'goal.unlocked_hint': 'You earned permission',
+    'goal.btn_mark_bought': 'I bought it',
+    'goal.btn_add_task': '＋ Add task',
     'stat.tasks': 'Tasks',
     'stat.points': 'Points',
     'stat.streak': 'Streak',
     'empty.no_goal.title': 'No goal yet',
     'empty.no_goal.body': "Add your first wish — socks, a book, headphones. Anything you've been holding back from.",
-    'empty.done_today.title': "That's it for today",
-    'empty.done_today.body': 'The bar is waiting. Add tasks to earn more points.',
-    'empty.no_tasks.title': 'No tasks yet',
-    'empty.no_tasks.body': 'Add simple steps toward your goal — from "do the dishes" to "ship the project".',
+    'empty.no_goal.cta': '＋ Add your first goal',
+    'empty.no_tasks.title': 'No tasks',
+    'empty.no_tasks.body': 'Add simple steps — from "do the dishes" to "ship the project". Each one earns points.',
+    'empty.no_freedom.title': 'Empty for now',
+    'empty.no_freedom.body': 'When you mark your first purchase, it lands here on your freedom map.',
     'reward.title': 'Freedom score',
     'reward.allowed': 'allowed',
     'domain.clothing': 'Clothing',
@@ -97,18 +134,45 @@ const I18N = {
     'domain.pleasure': 'Pleasure',
     'domain.other': 'Other',
     'toast.points': '+{n} points',
+    'toast.goal_added': 'Goal added',
+    'toast.task_added': 'Task added',
+    'toast.bought': 'Added to your freedom map',
     'unlock.title': 'You can!',
-    'unlock.sub': 'You earned {name}. Go to the shop, buy it, come back.',
+    'unlock.sub': 'You earned {name}. Go to the shop, buy it, then come back and tap "I bought it".',
     'unlock.btn': 'Accept permission',
     'task.pts': 'pts',
     'task.cat.work': 'Work',
     'task.cat.health': 'Health',
     'task.cat.home': 'Home',
-    'sample.task.proposal': 'Finish client proposal',
-    'sample.task.workout': '30 min workout',
-    'sample.task.kitchen': 'Clean the kitchen',
+    'add_goal.title': 'New goal',
+    'add_goal.name': 'What do you want?',
+    'add_goal.name_placeholder': 'e.g. Sony WH-1000XM5',
+    'add_goal.price': 'Price',
+    'add_goal.price_placeholder': '25000',
+    'add_goal.type': 'Type',
+    'add_goal.type_need': 'Need',
+    'add_goal.type_want': 'Want',
+    'add_goal.domain': 'Category',
+    'add_goal.save': 'Create',
+    'add_task.title': 'New task',
+    'add_task.name': 'What to do?',
+    'add_task.name_placeholder': 'e.g. 30 min walk',
+    'add_task.points': 'Difficulty',
+    'add_task.points_small': 'Small · 10',
+    'add_task.points_mid': 'Medium · 25',
+    'add_task.points_big': 'Large · 50',
+    'add_task.save': 'Add',
+    'reflect.title': 'How does it feel?',
+    'reflect.sub': "This is training the 'I'm allowed' muscle. No right answers.",
+    'reflect.good': 'Good',
+    'reflect.okay': 'Okay',
+    'reflect.guilty': 'Guilty',
+    'reflect.note_placeholder': 'Anything to add? (optional)',
+    'reflect.save': 'Done',
     'settings.title': 'Settings',
-    'lang.toggle': 'RU'
+    'lang.toggle': 'RU',
+    'common.cancel': 'Cancel',
+    'common.delete': 'Delete'
   }
 };
 
@@ -142,60 +206,36 @@ function setLang(newLang) {
   syncNavLabels();
 }
 
-// ───────── storage: Telegram CloudStorage с fallback на localStorage ─────────
+// ───────── storage ─────────
 
 const cs = tg?.CloudStorage;
-
 const storage = {
   getItem(key) {
-    if (cs?.getItem) {
-      return new Promise(resolve => cs.getItem(key, (err, val) => resolve(err || val == null ? null : val)));
-    }
+    if (cs?.getItem) return new Promise(r => cs.getItem(key, (e, v) => r(e || v == null ? null : v)));
     return Promise.resolve(localStorage.getItem(key));
   },
   setItem(key, value) {
-    if (cs?.setItem) {
-      return new Promise(resolve => cs.setItem(key, value, () => resolve()));
-    }
+    if (cs?.setItem) return new Promise(r => cs.setItem(key, value, () => r()));
     localStorage.setItem(key, value);
     return Promise.resolve();
   }
 };
 
-const STORAGE_KEY = 'afford:v1';
+const STORAGE_KEY = 'afford:v2';
 
-// ───────── default state ─────────
+// ───────── state ─────────
 
-function makeDefaultState() {
-  const now = Date.now();
+function makeEmptyState() {
   return {
-    goals: [
-      {
-        id: 'goal-1',
-        name: 'Sony WH-1000XM5',
-        price: 25000,
-        type: 'want',
-        threshold: 500,
-        domain: 'comfort',
-        currentPoints: 340,
-        level: 3,
-        createdAt: now,
-        purchasedAt: null
-      }
-    ],
-    tasks: [
-      { id: 't1', goalId: 'goal-1', titleKey: 'sample.task.proposal', categoryKey: 'task.cat.work', points: 25, color: 'orange', completedAt: null },
-      { id: 't2', goalId: 'goal-1', titleKey: 'sample.task.workout', categoryKey: 'task.cat.health', points: 15, color: 'green', completedAt: null },
-      { id: 't3', goalId: 'goal-1', titleKey: 'sample.task.kitchen', categoryKey: 'task.cat.home', points: 10, color: 'blue', completedAt: null }
-    ],
-    streak: { current: 5, longest: 8, lastCompletedDay: null },
-    todayPoints: 47,
+    goals: [],
+    tasks: [],
     freedomLog: [],
+    streak: { current: 0, longest: 0, lastCompletedDay: null },
     unlocked: false
   };
 }
 
-let state = makeDefaultState();
+let state = makeEmptyState();
 let currentScreen = 'home';
 
 async function loadState() {
@@ -203,8 +243,8 @@ async function loadState() {
   if (!raw) return;
   try {
     const saved = JSON.parse(raw);
-    state = { ...makeDefaultState(), ...saved };
-  } catch { /* keep default */ }
+    state = { ...makeEmptyState(), ...saved };
+  } catch {}
 }
 
 let saveTimer = null;
@@ -213,7 +253,7 @@ function saveState() {
   saveTimer = setTimeout(() => storage.setItem(STORAGE_KEY, JSON.stringify(state)), 250);
 }
 
-// ───────── pro state ─────────
+// ───────── pro ─────────
 
 async function checkUnlock() {
   if (!tg?.initData) return;
@@ -233,6 +273,8 @@ async function checkUnlock() {
 const $ = (id) => document.getElementById(id);
 const app = $('app');
 
+const genId = () => (crypto?.randomUUID?.() || ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)));
+
 function greeting() {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return t('greeting.morning');
@@ -247,14 +289,35 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// Перевести title задачи: если есть titleKey — через t(), иначе literal title
-function taskTitle(task) {
-  if (task.titleKey) return t(task.titleKey);
-  return task.title || '';
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function dateISO(ts) { return new Date(ts).toISOString().slice(0, 10); }
+
+function activeGoal() { return state.goals.find(g => !g.purchasedAt) || null; }
+
+function todayPoints() {
+  const today = todayISO();
+  return state.tasks
+    .filter(task => task.completedAt && dateISO(task.completedAt) === today)
+    .reduce((sum, task) => sum + (task.points || 0), 0);
 }
-function taskCategory(task) {
-  if (task.categoryKey) return t(task.categoryKey);
-  return task.category || '';
+
+function pendingTasksForGoal(goalId) {
+  return state.tasks.filter(t => !t.completedAt && t.goalId === goalId);
+}
+
+// Порог очков, нужный для цели
+function thresholdFor(type, price) {
+  if (type === 'need') return 50;
+  // want: масштабируем по цене, минимум 100, максимум 1000
+  const n = Math.max(100, Math.min(1000, Math.round(price / 50)));
+  return n;
+}
+
+function taskColorFor(points) {
+  if (points >= 50) return 'red';
+  if (points >= 25) return 'orange';
+  if (points >= 15) return 'green';
+  return 'blue';
 }
 
 function showToast(msg) {
@@ -273,45 +336,54 @@ function showToast(msg) {
 // ───────── screens ─────────
 
 function renderHome() {
-  const activeGoal = state.goals.find(g => !g.purchasedAt) || state.goals[0];
-  const pendingTasks = state.tasks.filter(t => !t.completedAt && (!t.goalId || t.goalId === activeGoal?.id));
+  const goal = activeGoal();
 
-  if (!activeGoal) {
+  if (!goal) {
     app.innerHTML = `
       ${topbarHtml()}
       <div class="empty-state">
         <strong>${t('empty.no_goal.title')}</strong>
         ${escapeHtml(t('empty.no_goal.body'))}
+        <button type="button" class="cta-btn" data-action="add-goal">${t('empty.no_goal.cta')}</button>
       </div>
     `;
     bindCommon();
     return;
   }
 
-  const pct = Math.min(100, (activeGoal.currentPoints / activeGoal.threshold) * 100);
-  const remaining = Math.max(0, activeGoal.threshold - activeGoal.currentPoints);
+  const tasks = pendingTasksForGoal(goal.id);
+  const pct = Math.min(100, (goal.currentPoints / goal.threshold) * 100);
+  const remaining = Math.max(0, goal.threshold - goal.currentPoints);
+  const ready = goal.currentPoints >= goal.threshold;
 
   app.innerHTML = `
     ${topbarHtml()}
-    <div class="goal-card">
+    <div class="goal-card ${ready ? 'ready' : ''}">
       <div class="overline">${t('section.current_goal')}</div>
-      <div class="goal-name">${escapeHtml(activeGoal.name)}</div>
+      <div class="goal-name">${escapeHtml(goal.name)}</div>
       <div class="goal-points">
-        <span class="goal-points-cur">${activeGoal.currentPoints}</span>
-        <span class="goal-points-of">/${activeGoal.threshold}</span>
+        <span class="goal-points-cur">${goal.currentPoints}</span>
+        <span class="goal-points-of">/${goal.threshold}</span>
       </div>
       <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
-      <div class="goal-meta">${t('goal.level', { level: activeGoal.level, remaining })}</div>
+      <div class="goal-meta">${ready
+        ? `<strong>${t('goal.unlocked_hint')}</strong>`
+        : t('goal.level', { level: Math.floor(goal.currentPoints / 100) + 1, remaining })
+      }</div>
+      ${ready
+        ? `<button type="button" class="goal-action primary" data-action="mark-bought">${t('goal.btn_mark_bought')}</button>`
+        : `<button type="button" class="goal-action ghost" data-action="add-task">${t('goal.btn_add_task')}</button>`
+      }
     </div>
 
     <div class="section-label">${t('section.today')}</div>
     <div class="stats">
       <div class="stat stat-blue">
-        <div class="stat-num">${pendingTasks.length}</div>
+        <div class="stat-num">${tasks.length}</div>
         <div class="stat-label">${t('stat.tasks')}</div>
       </div>
       <div class="stat stat-green">
-        <div class="stat-num">${state.todayPoints}</div>
+        <div class="stat-num">${todayPoints()}</div>
         <div class="stat-label">${t('stat.points')}</div>
       </div>
       <div class="stat stat-red">
@@ -322,12 +394,13 @@ function renderHome() {
 
     <div class="section-row">
       <div class="section-label">${t('section.up_next')}</div>
-      <button type="button" class="section-link" data-go="tasks">${t('section.view_all')}</button>
+      ${tasks.length > 3 ? `<button type="button" class="section-link" data-go="tasks">${t('section.view_all')}</button>` : ''}
     </div>
-    ${pendingTasks.length ? renderTaskList(pendingTasks.slice(0, 3)) : `
+    ${tasks.length ? renderTaskList(tasks.slice(0, 3)) : `
       <div class="empty-state">
-        <strong>${t('empty.done_today.title')}</strong>
-        ${escapeHtml(t('empty.done_today.body'))}
+        <strong>${t('empty.no_tasks.title')}</strong>
+        ${escapeHtml(t('empty.no_tasks.body'))}
+        <button type="button" class="cta-btn" data-action="add-task">${t('goal.btn_add_task')}</button>
       </div>
     `}
   `;
@@ -335,13 +408,17 @@ function renderHome() {
 }
 
 function renderTasks() {
+  const goal = activeGoal();
+  const tasks = goal ? state.tasks.filter(t => t.goalId === goal.id) : state.tasks;
+
   app.innerHTML = `
     ${topbarHtml(t('screen.tasks'))}
-    <div class="section-label">${t('section.all_tasks')}</div>
-    ${state.tasks.length ? renderTaskList(state.tasks) : `
+    ${goal ? `<div class="task-goal-hint">${escapeHtml(goal.name)} · ${goal.currentPoints}/${goal.threshold}</div>` : ''}
+    ${tasks.length ? renderTaskList(tasks) : `
       <div class="empty-state">
         <strong>${t('empty.no_tasks.title')}</strong>
         ${escapeHtml(t('empty.no_tasks.body'))}
+        ${goal ? `<button type="button" class="cta-btn" data-action="add-task">${t('goal.btn_add_task')}</button>` : ''}
       </div>
     `}
   `;
@@ -355,7 +432,13 @@ function renderReward() {
   ];
   const counts = {};
   for (const d of domains) counts[d.key] = 0;
-  for (const entry of state.freedomLog) counts[entry.domain || 'other'] = (counts[entry.domain || 'other'] || 0) + 1;
+  for (const entry of state.freedomLog) {
+    const key = entry.domain || 'other';
+    counts[key] = (counts[key] || 0) + 1;
+  }
+
+  const hasAny = state.freedomLog.length > 0;
+  const sortedHistory = [...state.freedomLog].sort((a, b) => b.purchasedAt - a.purchasedAt);
 
   app.innerHTML = `
     ${topbarHtml(t('screen.reward'))}
@@ -369,13 +452,49 @@ function renderReward() {
         </div>
       `).join('')}
     </div>
+
+    ${hasAny ? `
+      <div class="section-label">${t('section.history')}</div>
+      <div class="history-list">
+        ${sortedHistory.map(e => `
+          <div class="history-item">
+            <div class="history-feeling">${feelingEmoji(e.feeling)}</div>
+            <div class="history-body">
+              <div class="history-name">${escapeHtml(e.name)}</div>
+              <div class="history-meta">${t('domain.' + (e.domain || 'other'))} · ${formatDate(e.purchasedAt)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : `
+      <div class="empty-state" style="margin-top:16px">
+        <strong>${t('empty.no_freedom.title')}</strong>
+        ${escapeHtml(t('empty.no_freedom.body'))}
+      </div>
+    `}
   `;
   bindCommon();
+}
+
+function feelingEmoji(f) {
+  if (f === 'good') return '😌';
+  if (f === 'okay') return '😐';
+  if (f === 'guilty') return '😞';
+  return '·';
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' });
 }
 
 // ───────── partials ─────────
 
 function topbarHtml(title) {
+  const goal = activeGoal();
+  const showPlus = currentScreen === 'home' || currentScreen === 'tasks';
+  const plusAction = !goal ? 'add-goal' : 'add-task';
+
   return `
     <div class="topbar">
       <div>
@@ -383,13 +502,8 @@ function topbarHtml(title) {
         <h1 class="title-serif">${escapeHtml(title || t('screen.dashboard'))}</h1>
       </div>
       <div class="topbar-actions">
+        ${showPlus ? `<button type="button" class="icon-btn primary" data-action="${plusAction}" aria-label="Add">+</button>` : ''}
         <button type="button" class="lang-btn" id="langBtn" aria-label="Language">${t('lang.toggle')}</button>
-        <button type="button" class="icon-btn" id="settingsBtn" aria-label="${t('settings.title')}">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-        </button>
       </div>
     </div>
   `;
@@ -399,15 +513,18 @@ function renderTaskList(tasks) {
   return `
     <div class="task-list">
       ${tasks.map(task => {
-        const color = task.color || pickColor(task.points);
+        const color = task.color || taskColorFor(task.points);
         return `
           <button type="button" class="task-row ${task.completedAt ? 'done' : ''}" data-task="${task.id}">
             <div class="task-badge t-${color}">${task.points}</div>
             <div class="task-body">
-              <div class="task-title">${escapeHtml(taskTitle(task))}</div>
-              <div class="task-meta">${escapeHtml(taskCategory(task))} · ${task.points} ${t('task.pts')}</div>
+              <div class="task-title">${escapeHtml(task.title)}</div>
+              <div class="task-meta">${task.points} ${t('task.pts')}</div>
             </div>
-            <svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            ${task.completedAt
+              ? `<span class="task-check">✓</span>`
+              : `<svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+            }
           </button>
         `;
       }).join('')}
@@ -415,14 +532,7 @@ function renderTaskList(tasks) {
   `;
 }
 
-function pickColor(points) {
-  if (points >= 50) return 'red';
-  if (points >= 25) return 'orange';
-  if (points >= 15) return 'green';
-  return 'blue';
-}
-
-// ───────── interactions ─────────
+// ───────── actions ─────────
 
 function bindCommon() {
   for (const btn of document.querySelectorAll('[data-task]')) {
@@ -431,6 +541,9 @@ function bindCommon() {
   for (const btn of document.querySelectorAll('[data-go]')) {
     btn.addEventListener('click', () => switchScreen(btn.dataset.go));
   }
+  for (const btn of document.querySelectorAll('[data-action]')) {
+    btn.addEventListener('click', () => handleAction(btn.dataset.action));
+  }
   const langBtn = $('langBtn');
   if (langBtn) langBtn.addEventListener('click', () => {
     setLang(lang === 'ru' ? 'en' : 'ru');
@@ -438,22 +551,26 @@ function bindCommon() {
   });
 }
 
+function handleAction(action) {
+  if (action === 'add-goal') openAddGoal();
+  else if (action === 'add-task') openAddTask();
+  else if (action === 'mark-bought') openReflection();
+}
+
 function completeTask(taskId) {
   const task = state.tasks.find(x => x.id === taskId);
   if (!task || task.completedAt) return;
   task.completedAt = Date.now();
 
-  const goalId = task.goalId || state.goals.find(g => !g.purchasedAt)?.id;
-  const goal = state.goals.find(g => g.id === goalId);
-  if (goal) {
+  const goal = state.goals.find(g => g.id === task.goalId);
+  if (goal && !goal.purchasedAt) {
     goal.currentPoints = (goal.currentPoints || 0) + task.points;
-    goal.level = Math.floor(goal.currentPoints / 100) + 1;
   }
-  state.todayPoints += task.points;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayISO();
   if (state.streak.lastCompletedDay !== today) {
-    state.streak.current = (state.streak.lastCompletedDay) ? state.streak.current + 1 : 1;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    state.streak.current = state.streak.lastCompletedDay === yesterday ? state.streak.current + 1 : 1;
     state.streak.lastCompletedDay = today;
     state.streak.longest = Math.max(state.streak.longest || 0, state.streak.current);
   }
@@ -462,7 +579,9 @@ function completeTask(taskId) {
   hapticNotif('success');
   showToast(t('toast.points', { n: task.points }));
 
-  if (goal && goal.currentPoints >= goal.threshold && !goal.purchasedAt) {
+  if (goal && goal.currentPoints >= goal.threshold && !goal.purchasedAt && !goal._celebrated) {
+    goal._celebrated = true;
+    saveState();
     setTimeout(() => showUnlock(goal), 400);
   }
   render();
@@ -487,6 +606,214 @@ function showUnlock(goal) {
     haptic('medium');
   });
 }
+
+// ───────── sheets ─────────
+
+function openSheet(html) {
+  closeSheet();
+  const ov = document.createElement('div');
+  ov.className = 'sheet-overlay';
+  ov.innerHTML = `<div class="sheet">${html}</div>`;
+  document.body.appendChild(ov);
+  document.body.classList.add('sheet-open');
+  requestAnimationFrame(() => ov.classList.add('visible'));
+  ov.addEventListener('click', e => {
+    if (e.target === ov) closeSheet();
+  });
+}
+
+function closeSheet() {
+  const ov = document.querySelector('.sheet-overlay');
+  if (!ov) return;
+  ov.classList.remove('visible');
+  document.body.classList.remove('sheet-open');
+  setTimeout(() => ov.remove(), 220);
+}
+
+function openAddGoal() {
+  const domains = ['clothing', 'rest', 'comfort', 'health', 'pleasure', 'other'];
+  openSheet(`
+    <div class="sheet-grabber"></div>
+    <div class="sheet-title-row">
+      <h3 class="sheet-title">${t('add_goal.title')}</h3>
+      <button type="button" class="sheet-close" id="sheetClose">✕</button>
+    </div>
+    <label class="field">
+      <span class="field-label">${t('add_goal.name')}</span>
+      <input type="text" id="ag-name" class="field-input" placeholder="${t('add_goal.name_placeholder')}" autocomplete="off">
+    </label>
+    <label class="field">
+      <span class="field-label">${t('add_goal.price')}</span>
+      <input type="number" id="ag-price" class="field-input" placeholder="${t('add_goal.price_placeholder')}" inputmode="numeric">
+    </label>
+    <div class="field">
+      <span class="field-label">${t('add_goal.type')}</span>
+      <div class="seg">
+        <button type="button" class="seg-btn active" data-type="want">${t('add_goal.type_want')}</button>
+        <button type="button" class="seg-btn" data-type="need">${t('add_goal.type_need')}</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">${t('add_goal.domain')}</span>
+      <div class="chips">
+        ${domains.map((d, i) => `<button type="button" class="chip ${i === 2 ? 'active' : ''}" data-domain="${d}">${t('domain.' + d)}</button>`).join('')}
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button type="button" class="btn-primary" id="ag-save">${t('add_goal.save')}</button>
+    </div>
+  `);
+
+  let pickedType = 'want';
+  let pickedDomain = 'comfort';
+
+  const ov = document.querySelector('.sheet-overlay');
+  ov.querySelector('#sheetClose').addEventListener('click', closeSheet);
+  ov.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => {
+    pickedType = b.dataset.type;
+    ov.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('active', x === b));
+  }));
+  ov.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+    pickedDomain = b.dataset.domain;
+    ov.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === b));
+  }));
+  ov.querySelector('#ag-save').addEventListener('click', () => {
+    const name = ov.querySelector('#ag-name').value.trim();
+    const price = Number(ov.querySelector('#ag-price').value) || 0;
+    if (!name) { ov.querySelector('#ag-name').focus(); return; }
+    state.goals.push({
+      id: genId(),
+      name,
+      price,
+      type: pickedType,
+      threshold: thresholdFor(pickedType, price),
+      domain: pickedDomain,
+      currentPoints: 0,
+      createdAt: Date.now(),
+      purchasedAt: null
+    });
+    saveState();
+    closeSheet();
+    showToast(t('toast.goal_added'));
+    haptic('medium');
+    render();
+  });
+
+  setTimeout(() => ov.querySelector('#ag-name').focus(), 100);
+}
+
+function openAddTask() {
+  const goal = activeGoal();
+  if (!goal) { openAddGoal(); return; }
+
+  openSheet(`
+    <div class="sheet-grabber"></div>
+    <div class="sheet-title-row">
+      <h3 class="sheet-title">${t('add_task.title')}</h3>
+      <button type="button" class="sheet-close" id="sheetClose">✕</button>
+    </div>
+    <div class="sheet-hint">${escapeHtml(goal.name)} · ${goal.currentPoints}/${goal.threshold}</div>
+    <label class="field">
+      <span class="field-label">${t('add_task.name')}</span>
+      <input type="text" id="at-name" class="field-input" placeholder="${t('add_task.name_placeholder')}" autocomplete="off">
+    </label>
+    <div class="field">
+      <span class="field-label">${t('add_task.points')}</span>
+      <div class="seg seg-3">
+        <button type="button" class="seg-btn" data-pts="10">${t('add_task.points_small')}</button>
+        <button type="button" class="seg-btn active" data-pts="25">${t('add_task.points_mid')}</button>
+        <button type="button" class="seg-btn" data-pts="50">${t('add_task.points_big')}</button>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button type="button" class="btn-primary" id="at-save">${t('add_task.save')}</button>
+    </div>
+  `);
+
+  let pickedPts = 25;
+  const ov = document.querySelector('.sheet-overlay');
+  ov.querySelector('#sheetClose').addEventListener('click', closeSheet);
+  ov.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => {
+    pickedPts = Number(b.dataset.pts);
+    ov.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('active', x === b));
+  }));
+  ov.querySelector('#at-save').addEventListener('click', () => {
+    const title = ov.querySelector('#at-name').value.trim();
+    if (!title) { ov.querySelector('#at-name').focus(); return; }
+    state.tasks.push({
+      id: genId(),
+      goalId: goal.id,
+      title,
+      points: pickedPts,
+      color: taskColorFor(pickedPts),
+      createdAt: Date.now(),
+      completedAt: null
+    });
+    saveState();
+    closeSheet();
+    showToast(t('toast.task_added'));
+    haptic('medium');
+    render();
+  });
+
+  setTimeout(() => ov.querySelector('#at-name').focus(), 100);
+}
+
+function openReflection() {
+  const goal = activeGoal();
+  if (!goal) return;
+
+  openSheet(`
+    <div class="sheet-grabber"></div>
+    <div class="sheet-title-row">
+      <h3 class="sheet-title">${t('reflect.title')}</h3>
+      <button type="button" class="sheet-close" id="sheetClose">✕</button>
+    </div>
+    <div class="sheet-hint">${escapeHtml(goal.name)}</div>
+    <div class="sheet-sub">${t('reflect.sub')}</div>
+    <div class="feel-row">
+      <button type="button" class="feel-btn" data-feel="good"><span>😌</span><span class="feel-label">${t('reflect.good')}</span></button>
+      <button type="button" class="feel-btn" data-feel="okay"><span>😐</span><span class="feel-label">${t('reflect.okay')}</span></button>
+      <button type="button" class="feel-btn" data-feel="guilty"><span>😞</span><span class="feel-label">${t('reflect.guilty')}</span></button>
+    </div>
+    <textarea id="rf-note" class="field-input area" rows="3" placeholder="${t('reflect.note_placeholder')}"></textarea>
+    <div class="sheet-actions">
+      <button type="button" class="btn-primary" id="rf-save" disabled>${t('reflect.save')}</button>
+    </div>
+  `);
+
+  let feeling = null;
+  const ov = document.querySelector('.sheet-overlay');
+  ov.querySelector('#sheetClose').addEventListener('click', closeSheet);
+  ov.querySelectorAll('.feel-btn').forEach(b => b.addEventListener('click', () => {
+    feeling = b.dataset.feel;
+    ov.querySelectorAll('.feel-btn').forEach(x => x.classList.toggle('active', x === b));
+    ov.querySelector('#rf-save').disabled = false;
+    haptic('light');
+  }));
+  ov.querySelector('#rf-save').addEventListener('click', () => {
+    if (!feeling) return;
+    const note = ov.querySelector('#rf-note').value.trim();
+    goal.purchasedAt = Date.now();
+    goal.reflection = { feeling, note: note || null };
+    state.freedomLog.push({
+      goalId: goal.id,
+      name: goal.name,
+      price: goal.price,
+      domain: goal.domain,
+      feeling,
+      note: note || null,
+      purchasedAt: goal.purchasedAt
+    });
+    saveState();
+    closeSheet();
+    showToast(t('toast.bought'));
+    hapticNotif('success');
+    render();
+  });
+}
+
+// ───────── navigation ─────────
 
 function switchScreen(name) {
   if (currentScreen === name) return;
