@@ -92,7 +92,16 @@ const I18N = {
     'settings.title': 'Настройки',
     'lang.toggle': 'EN',
     'common.cancel': 'Отмена',
-    'common.delete': 'Удалить'
+    'common.delete': 'Удалить',
+    'goals.title': 'Все цели',
+    'goals.subtitle': 'Твой вишлист и то, что уже разрешено',
+    'goals.make_current': 'Сделать текущей',
+    'goals.current_badge': 'Сейчас',
+    'goals.purchased_badge': '✓ Куплено',
+    'goals.open': 'Все цели ({n})',
+    'toast.current_set': 'Текущая цель обновлена',
+    'toast.goal_deleted': 'Цель удалена',
+    'confirm.delete_goal': 'Удалить эту цель? Все её задачи также пропадут.'
   },
   en: {
     'greeting.morning': 'Good morning',
@@ -172,7 +181,16 @@ const I18N = {
     'settings.title': 'Settings',
     'lang.toggle': 'RU',
     'common.cancel': 'Cancel',
-    'common.delete': 'Delete'
+    'common.delete': 'Delete',
+    'goals.title': 'All goals',
+    'goals.subtitle': 'Your wishlist and what you already allowed',
+    'goals.make_current': 'Make current',
+    'goals.current_badge': 'Current',
+    'goals.purchased_badge': '✓ Bought',
+    'goals.open': 'All goals ({n})',
+    'toast.current_set': 'Current goal updated',
+    'toast.goal_deleted': 'Goal removed',
+    'confirm.delete_goal': 'Delete this goal? Its tasks will be removed too.'
   }
 };
 
@@ -231,6 +249,7 @@ function makeEmptyState() {
     tasks: [],
     freedomLog: [],
     streak: { current: 0, longest: 0, lastCompletedDay: null },
+    currentGoalId: null,
     unlocked: false
   };
 }
@@ -244,6 +263,10 @@ async function loadState() {
   try {
     const saved = JSON.parse(raw);
     state = { ...makeEmptyState(), ...saved };
+    // Миграция: если есть цели, но currentGoalId не выставлен — берём первую активную
+    if (!state.currentGoalId && state.goals.length) {
+      state.currentGoalId = state.goals.find(g => !g.purchasedAt)?.id || null;
+    }
   } catch {}
 }
 
@@ -292,7 +315,13 @@ function escapeHtml(s) {
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 function dateISO(ts) { return new Date(ts).toISOString().slice(0, 10); }
 
-function activeGoal() { return state.goals.find(g => !g.purchasedAt) || null; }
+function activeGoal() {
+  if (state.currentGoalId) {
+    const g = state.goals.find(g => g.id === state.currentGoalId);
+    if (g && !g.purchasedAt) return g;
+  }
+  return state.goals.find(g => !g.purchasedAt) || null;
+}
 
 function todayPoints() {
   const today = todayISO();
@@ -494,6 +523,7 @@ function topbarHtml(title) {
   const goal = activeGoal();
   const showPlus = currentScreen === 'home' || currentScreen === 'tasks';
   const plusAction = !goal ? 'add-goal' : 'add-task';
+  const showGoalsBtn = state.goals.length > 0 && (currentScreen === 'home' || currentScreen === 'tasks');
 
   return `
     <div class="topbar">
@@ -502,6 +532,9 @@ function topbarHtml(title) {
         <h1 class="title-serif">${escapeHtml(title || t('screen.dashboard'))}</h1>
       </div>
       <div class="topbar-actions">
+        ${showGoalsBtn ? `<button type="button" class="icon-btn" data-action="open-goals" aria-label="${t('goals.title')}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>` : ''}
         ${showPlus ? `<button type="button" class="icon-btn primary" data-action="${plusAction}" aria-label="Add">+</button>` : ''}
         <button type="button" class="lang-btn" id="langBtn" aria-label="Language">${t('lang.toggle')}</button>
       </div>
@@ -555,6 +588,7 @@ function handleAction(action) {
   if (action === 'add-goal') openAddGoal();
   else if (action === 'add-task') openAddTask();
   else if (action === 'mark-bought') openReflection();
+  else if (action === 'open-goals') openGoals();
 }
 
 function completeTask(taskId) {
@@ -681,7 +715,7 @@ function openAddGoal() {
     const name = ov.querySelector('#ag-name').value.trim();
     const price = Number(ov.querySelector('#ag-price').value) || 0;
     if (!name) { ov.querySelector('#ag-name').focus(); return; }
-    state.goals.push({
+    const newGoal = {
       id: genId(),
       name,
       price,
@@ -691,7 +725,10 @@ function openAddGoal() {
       currentPoints: 0,
       createdAt: Date.now(),
       purchasedAt: null
-    });
+    };
+    state.goals.push(newGoal);
+    // Если активной цели нет — новая автоматически становится текущей
+    if (!activeGoal()) state.currentGoalId = newGoal.id;
     saveState();
     closeSheet();
     showToast(t('toast.goal_added'));
@@ -805,12 +842,94 @@ function openReflection() {
       note: note || null,
       purchasedAt: goal.purchasedAt
     });
+    // Эта цель куплена — выбираем следующую активную как текущую
+    if (state.currentGoalId === goal.id) {
+      state.currentGoalId = state.goals.find(g => !g.purchasedAt)?.id || null;
+    }
     saveState();
     closeSheet();
     showToast(t('toast.bought'));
     hapticNotif('success');
     render();
   });
+}
+
+function openGoals() {
+  const sorted = [...state.goals].sort((a, b) => {
+    const ap = a.purchasedAt ? 1 : 0;
+    const bp = b.purchasedAt ? 1 : 0;
+    if (ap !== bp) return ap - bp; // активные сверху
+    if (!ap) return (b.createdAt || 0) - (a.createdAt || 0); // среди активных: новее сверху
+    return (b.purchasedAt || 0) - (a.purchasedAt || 0); // среди купленных: новее сверху
+  });
+  const cur = activeGoal();
+
+  openSheet(`
+    <div class="sheet-grabber"></div>
+    <div class="sheet-title-row">
+      <h3 class="sheet-title">${t('goals.title')}</h3>
+      <button type="button" class="sheet-close" id="sheetClose">✕</button>
+    </div>
+    <div class="sheet-sub">${escapeHtml(t('goals.subtitle'))}</div>
+    <div class="goals-list">
+      ${sorted.map(g => goalRowHtml(g, cur?.id === g.id)).join('')}
+    </div>
+    <div class="sheet-actions">
+      <button type="button" class="btn-primary" id="goals-add">${t('empty.no_goal.cta')}</button>
+    </div>
+  `);
+
+  const ov = document.querySelector('.sheet-overlay');
+  ov.querySelector('#sheetClose').addEventListener('click', closeSheet);
+  ov.querySelector('#goals-add').addEventListener('click', () => {
+    closeSheet();
+    setTimeout(openAddGoal, 250);
+  });
+  ov.querySelectorAll('[data-set-current]').forEach(b => b.addEventListener('click', () => {
+    state.currentGoalId = b.dataset.setCurrent;
+    saveState();
+    showToast(t('toast.current_set'));
+    haptic('medium');
+    closeSheet();
+    render();
+  }));
+  ov.querySelectorAll('[data-delete-goal]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.deleteGoal;
+    if (!window.confirm(t('confirm.delete_goal'))) return;
+    state.goals = state.goals.filter(g => g.id !== id);
+    state.tasks = state.tasks.filter(task => task.goalId !== id);
+    if (state.currentGoalId === id) {
+      state.currentGoalId = state.goals.find(g => !g.purchasedAt)?.id || null;
+    }
+    saveState();
+    showToast(t('toast.goal_deleted'));
+    hapticNotif('warning');
+    closeSheet();
+    setTimeout(() => {
+      if (state.goals.length) openGoals();
+      render();
+    }, 220);
+  }));
+}
+
+function goalRowHtml(g, isCurrent) {
+  const purchased = !!g.purchasedAt;
+  const statusLine = purchased
+    ? `${t('goals.purchased_badge')} · ${formatDate(g.purchasedAt)}`
+    : `${g.currentPoints}/${g.threshold} · ${t('add_goal.type_' + (g.type || 'want'))}`;
+  return `
+    <div class="goal-row ${isCurrent && !purchased ? 'current' : ''} ${purchased ? 'done' : ''}">
+      <div class="goal-row-body">
+        <div class="goal-row-name">${escapeHtml(g.name)}</div>
+        <div class="goal-row-meta">${statusLine}${g.price ? ' · ' + g.price : ''}</div>
+      </div>
+      <div class="goal-row-actions">
+        ${isCurrent && !purchased ? `<span class="goal-row-badge">${t('goals.current_badge')}</span>` : ''}
+        ${!isCurrent && !purchased ? `<button type="button" class="goal-row-make" data-set-current="${g.id}">${t('goals.make_current')}</button>` : ''}
+        <button type="button" class="goal-row-delete" data-delete-goal="${g.id}" aria-label="${t('common.delete')}">✕</button>
+      </div>
+    </div>
+  `;
 }
 
 // ───────── navigation ─────────
