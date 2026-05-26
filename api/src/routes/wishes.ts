@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { CreateWishInput, OgPreview, Wish, WishType, LifeDomain } from '@afford/shared';
-import { listActiveWishes, createWish } from '../db/wishes.js';
+import { listActiveWishes, createWish, markWishPurchased } from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
 
 const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
@@ -47,6 +47,20 @@ export async function wishesRoutes(app: FastifyInstance) {
       return { wish };
     }
   );
+
+  // "Уже купил(а)" — NEVER blocks. Writes a permission_event.
+  app.post<{
+    Params: { id: string };
+    Reply: { wish: Wish; belowThreshold: boolean; justPurchased: boolean } | { error: string };
+  }>('/api/wishes/:id/mark-bought', async (req, reply) => {
+    const userId = req.tgUser!.id;
+    const result = await markWishPurchased(userId, req.params.id);
+    if (!result.wish) {
+      reply.code(404);
+      return { error: 'wish not found' };
+    }
+    return { wish: result.wish, belowThreshold: result.belowThreshold, justPurchased: result.justPurchased };
+  });
 
   // OG preview — auth-gated so randos can't pivot through it as an open proxy.
   app.get<{ Querystring: OgQuery; Reply: OgPreview | { error: string } }>(

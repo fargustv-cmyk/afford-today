@@ -73,7 +73,17 @@ export const ru = {
   step_size_small: 'мелкий · 10',
   step_size_medium: 'средний · 25',
   step_size_large: 'крупный · 50',
-  step_add_save: 'добавить'
+  step_add_save: 'добавить',
+
+  // mark-bought + Mozhno screen
+  wish_mark_bought: 'я уже купил(а) это',
+  wish_mark_bought_hint: 'покупку никогда не блокируем — кнопка всегда твоя',
+  mozhno_pill_below: 'без гринда · горжусь',
+  mozhno_title: 'Можно!',
+  mozhno_sub_normal: 'Ты дошёл(ла) до конца. Официально — можно. Иди забирай.',
+  mozhno_sub_below: 'Ты позволил(а) себе это без всякого гринда. Вот это и есть рост 🤍',
+  mozhno_share: 'Поделиться',
+  mozhno_continue: 'Готово'
 } as const;
 
 export type RuKey = keyof typeof ru;

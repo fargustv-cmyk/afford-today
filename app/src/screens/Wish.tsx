@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { MicroPermissionTemplate, Step, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
+import { Mozhno } from '../components/Mozhno';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 
@@ -18,6 +19,7 @@ export function WishScreen({ wishId, onBack }: Props) {
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [working, setWorking] = useState<string | null>(null);
+  const [mozhno, setMozhno] = useState<null | { belowThreshold: boolean; closeToHome: boolean }>(null);
 
   useEffect(() => {
     // Find the wish in the list — we don't have a single-wish endpoint yet
@@ -45,7 +47,13 @@ export function WishScreen({ wishId, onBack }: Props) {
     : 100;
 
   const refreshWish = (updated: Wish | null) => {
-    if (updated) setWish(updated);
+    if (!updated) return;
+    const prev = wish;
+    setWish(updated);
+    // Just crossed the threshold? Trigger Mozhno automatically.
+    if (prev && prev.status === 'active' && updated.status === 'unlocked') {
+      setMozhno({ belowThreshold: false, closeToHome: false });
+    }
   };
 
   const onStepDone = async (stepId: string) => {
@@ -67,6 +75,18 @@ export function WishScreen({ wishId, onBack }: Props) {
       const { step, wish: w } = await a().doMicroPermission(wishId, templateId);
       setSteps((prev) => [step, ...prev]);
       refreshWish(w);
+    } finally {
+      setWorking(null);
+    }
+  };
+
+  const onMarkBought = async () => {
+    if (working) return;
+    setWorking('buy');
+    try {
+      const { wish: w, belowThreshold, justPurchased } = await a().markBought(wishId);
+      if (w) setWish(w);
+      if (justPurchased) setMozhno({ belowThreshold, closeToHome: true });
     } finally {
       setWorking(null);
     }
@@ -169,12 +189,39 @@ export function WishScreen({ wishId, onBack }: Props) {
         </section>
       )}
 
+      {wish.status !== 'purchased' && (
+        <div className="mark-bought-wrap">
+          <button
+            type="button"
+            className="mark-bought-btn"
+            onClick={onMarkBought}
+            disabled={working === 'buy'}
+          >
+            {working === 'buy' ? '…' : ru.wish_mark_bought}
+          </button>
+          <div className="mark-bought-hint">{ru.wish_mark_bought_hint}</div>
+        </div>
+      )}
+
       <AddStepSheet
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onCreated={onStepCreated}
         wishId={wishId}
       />
+
+      {mozhno && (
+        <Mozhno
+          wish={wish}
+          belowThreshold={mozhno.belowThreshold}
+          onShare={() => {/* prompt 5: share card */}}
+          onContinue={() => {
+            const close = mozhno.closeToHome;
+            setMozhno(null);
+            if (close) onBack();
+          }}
+        />
+      )}
     </main>
   );
 }

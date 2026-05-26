@@ -149,5 +149,14 @@ export const previewApi = {
       maybeUnlockMockWish(wish);
     }
     return { step, wish };
+  },
+  markBought: async (wishId: string) => {
+    const wish = mockWishes.find((w) => w.id === wishId);
+    if (!wish) throw new Error('not found');
+    if (wish.purchasedAt) return { wish, belowThreshold: false, justPurchased: false };
+    const belowThreshold = wish.pointsEarned < wish.pointsRequired;
+    wish.status = 'purchased';
+    wish.purchasedAt = new Date().toISOString();
+    return { wish, belowThreshold, justPurchased: true };
   }
 };

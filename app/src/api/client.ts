@@ -71,5 +71,11 @@ export const api = {
       `/api/wishes/${wishId}/micro-permissions/${templateId}/done`,
       { method: 'POST' }
     );
+  },
+  markBought(wishId: string): Promise<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }> {
+    return request<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }>(
+      `/api/wishes/${wishId}/mark-bought`,
+      { method: 'POST' }
+    );
   }
 };

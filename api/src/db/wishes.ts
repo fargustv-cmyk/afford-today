@@ -4,6 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CreateWishInput, Wish } from '@afford/shared';
 import { pointsRequiredFor } from '@afford/shared';
+import { createEvent } from './permissionEvents.js';
 
 const wishes = new Map<string, Wish>();
 
@@ -11,6 +12,11 @@ export async function getWishById(id: string): Promise<Wish | null> {
   return wishes.get(id) ?? null;
 }
 
+/**
+ * Add points to a wish. If we cross the threshold, flip status to 'unlocked'
+ * and record a permission_event (value=0, below_threshold=false). Returns the
+ * updated wish.
+ */
 export async function addPointsToWish(wishId: string, points: number): Promise<Wish | null> {
   const w = wishes.get(wishId);
   if (!w) return null;
@@ -19,8 +25,35 @@ export async function addPointsToWish(wishId: string, points: number): Promise<W
   if (w.status === 'active' && w.pointsEarned >= w.pointsRequired) {
     w.status = 'unlocked';
     w.unlockedAt = new Date().toISOString();
+    await createEvent(w.userId, w.id, 0, w.domain, false);
   }
   return w;
+}
+
+/**
+ * Mark a wish as purchased. NEVER blocked — always succeeds for an own wish
+ * regardless of points (SPEC §1.1 / CLAUDE.md rule #1). Writes a
+ * permission_event with value=price, below_threshold=true iff
+ * points_earned < points_required at this moment.
+ *
+ * Idempotent: re-calling on an already-purchased wish returns the existing
+ * state and writes no extra event.
+ */
+export async function markWishPurchased(
+  userId: number,
+  wishId: string
+): Promise<{ wish: Wish | null; belowThreshold: boolean; justPurchased: boolean }> {
+  const w = wishes.get(wishId);
+  if (!w || w.userId !== userId) return { wish: null, belowThreshold: false, justPurchased: false };
+  if (w.purchasedAt) return { wish: w, belowThreshold: false, justPurchased: false };
+
+  const belowThreshold = w.pointsEarned < w.pointsRequired;
+  w.status = 'purchased';
+  w.purchasedAt = new Date().toISOString();
+  // If unlocked event hasn't been written yet (purchased without filling the
+  // bar), this is the only event we ever write for this wish.
+  await createEvent(w.userId, w.id, w.price ?? 0, w.domain, belowThreshold);
+  return { wish: w, belowThreshold, justPurchased: true };
 }
 
 export async function listActiveWishes(userId: number): Promise<Wish[]> {
