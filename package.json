@@ -1,0 +1,19 @@
+{
+  "name": "afford-today",
+  "version": "0.1.0",
+  "description": "Telegram Mini App — permission to spend money on yourself",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  }
+}

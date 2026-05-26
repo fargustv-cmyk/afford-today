@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: afford-today
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: STARS_PRICE
+        value: "100"
+      - key: BOT_TOKEN
+        sync: false
+      - key: PRO_USER_IDS
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
