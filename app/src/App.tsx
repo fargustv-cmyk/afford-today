@@ -13,6 +13,32 @@ export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });
 
   useEffect(() => {
+    // Browser preview mode (?preview=1): skip server auth so the design can
+    // be inspected without going through Telegram. Server stays strict — this
+    // is purely client-side.
+    const previewMode = new URLSearchParams(window.location.search).get('preview') === '1';
+    if (previewMode) {
+      setState({
+        kind: 'authed',
+        me: {
+          unlocked: false,
+          user: {
+            id: 0,
+            createdAt: new Date().toISOString(),
+            currency: 'RUB',
+            locale: 'ru',
+            subscriptionStatus: 'free',
+            subscriptionUntil: null,
+            giftedTokens: 0,
+            selfPermissionFactor: 1,
+            settings: {},
+            firstName: 'preview'
+          }
+        }
+      });
+      return;
+    }
+
     if (!tg) {
       setState({ kind: 'no-telegram' });
       return;
