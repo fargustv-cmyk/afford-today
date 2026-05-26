@@ -1,19 +1,26 @@
 {
   "name": "afford-today",
-  "version": "0.1.0",
-  "description": "Telegram Mini App — permission to spend money on yourself",
-  "type": "module",
-  "main": "server.js",
+  "version": "0.2.0",
+  "private": true,
+  "description": "afford.today — Telegram Mini App giving permission to spend money on yourself",
+  "workspaces": [
+    "shared",
+    "api",
+    "app",
+    "bot"
+  ],
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "build:shared": "npm -w shared run build",
+    "build:app": "npm -w app run build",
+    "build:api": "npm -w api run build",
+    "build:bot": "npm -w bot run build",
+    "build": "npm run build:shared && npm run build:app && npm run build:api && npm run build:bot",
+    "dev:api": "npm -w api run dev",
+    "dev:app": "npm -w app run dev",
+    "dev:bot": "npm -w bot run dev",
+    "start": "node api/dist/server.js"
   },
   "engines": {
     "node": ">=20"
-  },
-  "dependencies": {
-    "@upstash/redis": "^1.38.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1"
   }
 }

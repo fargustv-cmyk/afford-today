@@ -1,4 +1,6 @@
 node_modules
+**/node_modules
+**/dist
 .env
 .env.example
 .git
@@ -6,3 +8,6 @@ node_modules
 .claude
 *.log
 .DS_Store
+.vite
+.cache
+reference

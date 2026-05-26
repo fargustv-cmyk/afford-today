@@ -1,21 +1,16 @@
 services:
   - type: web
     name: afford-today
-    runtime: node
+    runtime: docker
     plan: free
     region: frankfurt
-    buildCommand: npm install
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: STARS_PRICE
-        value: "100"
+      - key: NODE_ENV
+        value: production
       - key: BOT_TOKEN
         sync: false
+      - key: DATABASE_URL
+        sync: false
       - key: PRO_USER_IDS
-        sync: false
-      - key: UPSTASH_REDIS_REST_URL
-        sync: false
-      - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
