@@ -229,7 +229,20 @@ function setLang(newLang) {
 const cs = tg?.CloudStorage;
 const storage = {
   getItem(key) {
-    if (cs?.getItem) return new Promise(r => cs.getItem(key, (e, v) => r(e || v == null ? null : v)));
+    if (cs?.getItem) {
+      return new Promise(resolve => {
+        let done = false;
+        const finish = (val) => { if (!done) { done = true; resolve(val); } };
+        // Таймаут на случай если Telegram-коллбэк никогда не вернётся
+        const to = setTimeout(() => finish(null), 2000);
+        try {
+          cs.getItem(key, (err, val) => {
+            clearTimeout(to);
+            finish(err || val == null ? null : val);
+          });
+        } catch { finish(null); }
+      });
+    }
     return Promise.resolve(localStorage.getItem(key));
   },
   setItem(key, value) {
@@ -966,8 +979,13 @@ for (const b of document.querySelectorAll('.nav-item')) {
   b.addEventListener('click', () => switchScreen(b.dataset.screen));
 }
 
+// Сразу рисуем UI с дефолтным пустым стейтом — чтобы экран не висел чёрным,
+// пока ждём асинхронную загрузку из CloudStorage.
+render();
+
 (async () => {
   await loadState();
+  render();
   await checkUnlock();
   render();
 })();
