@@ -1,4 +1,11 @@
-import type { CreateWishInput, MeResponse, OgPreview, Wish } from '@afford/shared';
+import type {
+  CreateWishInput,
+  MeResponse,
+  MicroPermissionTemplate,
+  OgPreview,
+  Step,
+  Wish
+} from '@afford/shared';
 import { tg } from '../telegram';
 
 const initData = (): string => tg?.initData ?? '';
@@ -41,5 +48,28 @@ export const api = {
   },
   ogPreview(url: string): Promise<OgPreview> {
     return request<OgPreview>(`/api/og?url=${encodeURIComponent(url)}`);
+  },
+  listSteps(wishId: string): Promise<{ steps: Step[] }> {
+    return request<{ steps: Step[] }>(`/api/wishes/${wishId}/steps`);
+  },
+  createStep(wishId: string, title: string, points: number): Promise<{ step: Step }> {
+    return request<{ step: Step }>(`/api/wishes/${wishId}/steps`, {
+      method: 'POST',
+      body: JSON.stringify({ title, points })
+    });
+  },
+  markStepDone(stepId: string): Promise<{ step: Step; wish: Wish | null }> {
+    return request<{ step: Step; wish: Wish | null }>(`/api/steps/${stepId}/done`, {
+      method: 'POST'
+    });
+  },
+  microTemplates(): Promise<{ templates: MicroPermissionTemplate[] }> {
+    return request<{ templates: MicroPermissionTemplate[] }>('/api/micro-permissions');
+  },
+  doMicroPermission(wishId: string, templateId: string): Promise<{ step: Step; wish: Wish | null }> {
+    return request<{ step: Step; wish: Wish | null }>(
+      `/api/wishes/${wishId}/micro-permissions/${templateId}/done`,
+      { method: 'POST' }
+    );
   }
 };

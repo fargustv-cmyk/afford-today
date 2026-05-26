@@ -51,7 +51,29 @@ export const ru = {
   domain_health: 'здоровье',
   domain_joy: 'радость',
   domain_food: 'еда',
-  domain_other: 'другое'
+  domain_other: 'другое',
+
+  // wish detail
+  wish_back: '← назад',
+  wish_steps_title: 'шаги',
+  wish_add_step: '+ шаг',
+  wish_steps_empty_title: 'начнём с малого',
+  wish_steps_empty_body: 'один тап — одно микро-разрешение себе. они уже что-то приятное и заодно капают очки в цель.',
+  wish_step_done_btn: 'выполнил',
+  wish_unlocked_title: 'можно! 🎉',
+  wish_unlocked_body: 'шкала заполнена. иди забирай.',
+  wish_essential_title: 'это базовое — можно сразу',
+  wish_essential_body: 'без всяких порогов и шагов. еда, лекарства, гигиена — твоё прямо сейчас.',
+
+  // add step
+  step_add_title: 'новый шаг',
+  step_add_name_label: 'что сделать?',
+  step_add_name_placeholder: 'например: 30 минут прогулки',
+  step_add_size_label: 'размер',
+  step_size_small: 'мелкий · 10',
+  step_size_medium: 'средний · 25',
+  step_size_large: 'крупный · 50',
+  step_add_save: 'добавить'
 } as const;
 
 export type RuKey = keyof typeof ru;

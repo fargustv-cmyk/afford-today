@@ -8,7 +8,7 @@ import { AddWishSheet } from './AddWish';
 
 const a = () => (isPreview() ? previewApi : api);
 
-export function Home() {
+export function Home({ onOpenWish }: { onOpenWish: (id: string) => void }) {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -51,7 +51,9 @@ export function Home() {
         </section>
       ) : (
         <section className="wish-list">
-          {wishes.map((w) => <WishCard key={w.id} wish={w} />)}
+          {wishes.map((w) => (
+            <WishCard key={w.id} wish={w} onClick={() => onOpenWish(w.id)} />
+          ))}
         </section>
       )}
 

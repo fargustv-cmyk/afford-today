@@ -5,6 +5,8 @@ import fastifyStatic from '@fastify/static';
 import { env, assertProductionEnv } from './env.js';
 import { authRoutes } from './routes/auth.js';
 import { wishesRoutes } from './routes/wishes.js';
+import { stepsRoutes } from './routes/steps.js';
+import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,8 +21,21 @@ async function buildApp() {
     reply.header('Cache-Control', 'no-store, must-revalidate');
   });
 
+  // Auth gate for everything mutating except /api/me (which sets the user).
+  app.addHook('preHandler', async (req, reply) => {
+    if (
+      req.url.startsWith('/api/wishes') ||
+      req.url.startsWith('/api/steps') ||
+      req.url.startsWith('/api/micro-permissions') ||
+      req.url.startsWith('/api/og')
+    ) {
+      await requireUser(req, reply);
+    }
+  });
+
   await app.register(authRoutes);
   await app.register(wishesRoutes);
+  await app.register(stepsRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 

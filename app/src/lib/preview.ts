@@ -1,4 +1,4 @@
-import type { MeResponse, User, Wish } from '@afford/shared';
+import type { MeResponse, MicroPermissionTemplate, Step, User, Wish } from '@afford/shared';
 
 export const isPreview = (): boolean =>
   new URLSearchParams(window.location.search).get('preview') === '1';
@@ -39,6 +39,24 @@ const mockWishes: Wish[] = [
   }
 ];
 
+const mockSteps: Step[] = [];
+let stepId = 1;
+
+const mockTemplates: MicroPermissionTemplate[] = [
+  { id: 'mt-coffee', title: 'Возьми сегодня кофе навынос', suggestedPoints: 15, domain: 'joy', isPremium: false },
+  { id: 'mt-taxi', title: 'Поезжай на такси, не жди автобус', suggestedPoints: 20, domain: 'comfort', isPremium: false },
+  { id: 'mt-meal', title: 'Закажи то блюдо, что реально хочешь', suggestedPoints: 15, domain: 'food', isPremium: false },
+  { id: 'mt-socks', title: 'Купи носки, которые давно откладывал(а)', suggestedPoints: 10, domain: 'clothes', isPremium: false },
+  { id: 'mt-fun', title: 'Запишись на то, что приносит удовольствие', suggestedPoints: 25, domain: 'leisure', isPremium: false }
+];
+
+function maybeUnlockMockWish(w: Wish) {
+  if (w.status === 'active' && w.pointsEarned >= w.pointsRequired) {
+    w.status = 'unlocked';
+    w.unlockedAt = new Date().toISOString();
+  }
+}
+
 export const previewApi = {
   me: async () => mockMe,
   listWishes: async () => ({ wishes: [...mockWishes] }),
@@ -76,5 +94,60 @@ export const previewApi = {
     mockWishes.unshift(wish);
     return { wish };
   },
-  ogPreview: async (_url: string) => ({ title: null, imageUrl: null, price: null })
+  ogPreview: async (_url: string) => ({ title: null, imageUrl: null, price: null }),
+
+  listSteps: async (wishId: string) => ({
+    steps: mockSteps.filter((s) => s.wishId === wishId)
+  }),
+  createStep: async (wishId: string, title: string, points: number) => {
+    const step: Step = {
+      id: `step-${stepId++}`,
+      userId: 0,
+      wishId,
+      title,
+      kind: 'step',
+      points,
+      done: false,
+      doneAt: null,
+      createdAt: new Date().toISOString()
+    };
+    mockSteps.push(step);
+    return { step };
+  },
+  markStepDone: async (sid: string) => {
+    const s = mockSteps.find((x) => x.id === sid);
+    if (!s || s.done) return { step: s!, wish: null };
+    s.done = true;
+    s.doneAt = new Date().toISOString();
+    const wish = mockWishes.find((w) => w.id === s.wishId) ?? null;
+    if (wish) {
+      wish.pointsEarned += s.points;
+      maybeUnlockMockWish(wish);
+    }
+    return { step: s, wish };
+  },
+  microTemplates: async () => ({ templates: mockTemplates }),
+  doMicroPermission: async (wishId: string, templateId: string) => {
+    const tpl = mockTemplates.find((t) => t.id === templateId);
+    if (!tpl) throw new Error('not found');
+    const now = new Date().toISOString();
+    const step: Step = {
+      id: `step-${stepId++}`,
+      userId: 0,
+      wishId,
+      title: tpl.title,
+      kind: 'micro_permission',
+      points: tpl.suggestedPoints,
+      done: true,
+      doneAt: now,
+      createdAt: now
+    };
+    mockSteps.push(step);
+    const wish = mockWishes.find((w) => w.id === wishId) ?? null;
+    if (wish) {
+      wish.pointsEarned += tpl.suggestedPoints;
+      maybeUnlockMockWish(wish);
+    }
+    return { step, wish };
+  }
 };

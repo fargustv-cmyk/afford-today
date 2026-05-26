@@ -7,6 +7,22 @@ import { pointsRequiredFor } from '@afford/shared';
 
 const wishes = new Map<string, Wish>();
 
+export async function getWishById(id: string): Promise<Wish | null> {
+  return wishes.get(id) ?? null;
+}
+
+export async function addPointsToWish(wishId: string, points: number): Promise<Wish | null> {
+  const w = wishes.get(wishId);
+  if (!w) return null;
+  if (w.purchasedAt) return w;
+  w.pointsEarned = (w.pointsEarned || 0) + points;
+  if (w.status === 'active' && w.pointsEarned >= w.pointsRequired) {
+    w.status = 'unlocked';
+    w.unlockedAt = new Date().toISOString();
+  }
+  return w;
+}
+
 export async function listActiveWishes(userId: number): Promise<Wish[]> {
   const out: Wish[] = [];
   for (const w of wishes.values()) {

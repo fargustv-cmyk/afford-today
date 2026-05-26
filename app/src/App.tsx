@@ -5,6 +5,9 @@ import { ru } from './i18n/ru';
 import { api } from './api/client';
 import { isPreview, mockMe } from './lib/preview';
 import { Home } from './screens/Home';
+import { WishScreen } from './screens/Wish';
+
+type Screen = { kind: 'home' } | { kind: 'wish'; id: string };
 
 type State =
   | { kind: 'loading' }
@@ -14,6 +17,7 @@ type State =
 
 export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });
+  const [screen, setScreen] = useState<Screen>({ kind: 'home' });
 
   useEffect(() => {
     if (isPreview()) {
@@ -38,7 +42,10 @@ export function App() {
   }, []);
 
   if (state.kind === 'authed') {
-    return <Home />;
+    if (screen.kind === 'wish') {
+      return <WishScreen wishId={screen.id} onBack={() => setScreen({ kind: 'home' })} />;
+    }
+    return <Home onOpenWish={(id) => setScreen({ kind: 'wish', id })} />;
   }
 
   return (

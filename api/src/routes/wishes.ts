@@ -1,6 +1,5 @@
 import type { FastifyInstance } from 'fastify';
 import type { CreateWishInput, OgPreview, Wish, WishType, LifeDomain } from '@afford/shared';
-import { requireUser } from '../lib/requireUser.js';
 import { listActiveWishes, createWish } from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
 
@@ -12,12 +11,6 @@ interface OgQuery {
 }
 
 export async function wishesRoutes(app: FastifyInstance) {
-  app.addHook('preHandler', async (req, reply) => {
-    if (req.url.startsWith('/api/wishes') || req.url.startsWith('/api/og')) {
-      await requireUser(req, reply);
-    }
-  });
-
   app.get<{ Reply: { wishes: Wish[] } }>('/api/wishes', async (req) => {
     const userId = req.tgUser!.id;
     const wishes = await listActiveWishes(userId);

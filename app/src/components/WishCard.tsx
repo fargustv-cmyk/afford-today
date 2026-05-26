@@ -1,7 +1,7 @@
 import type { Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 
-export function WishCard({ wish }: { wish: Wish }) {
+export function WishCard({ wish, onClick }: { wish: Wish; onClick?: () => void }) {
   const isEssential = wish.type === 'essential';
   const isUnlocked = wish.status === 'unlocked';
   const pct =
@@ -10,7 +10,12 @@ export function WishCard({ wish }: { wish: Wish }) {
       : 100;
 
   return (
-    <article className="wish-card">
+    <article
+      className="wish-card"
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className="wish-thumb">
         {wish.imageUrl ? (
           <img src={wish.imageUrl} alt="" />
