@@ -1,8 +1,8 @@
 // Apply bot meta + menu button via Telegram Bot API.
-// Run: BOT_TOKEN=... APP_URL=https://afford-today.onrender.com node scripts/setup-bot.mjs
+// Run: BOT_TOKEN=... APP_URL=https://afford.today node scripts/setup-bot.mjs
 
 const TOKEN = process.env.BOT_TOKEN;
-const URL = process.env.APP_URL || 'https://afford-today.onrender.com';
+const URL = process.env.APP_URL || 'https://afford.today';
 if (!TOKEN) { console.error('BOT_TOKEN env required'); process.exit(1); }
 
 async function call(method, body) {
