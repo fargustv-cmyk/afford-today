@@ -306,6 +306,7 @@ export const previewApi = {
     ) as UserFreedom['byDomain'];
     let freedomScore = 0;
     let selfPermissions = 0;
+    const events: UserFreedom['events'] = [];
     for (const w of purchased) {
       const d = w.domain;
       const value = w.price ?? 0;
@@ -315,14 +316,27 @@ export const previewApi = {
       if (!byDomain[d].firstAt) byDomain[d].firstAt = w.purchasedAt;
       freedomScore += value;
       if (below) selfPermissions++;
+      events.push({
+        id: `evt-${w.id}`,
+        wishId: w.id,
+        wishTitle: w.title,
+        wishPrice: w.price,
+        wishCurrency: w.currency,
+        value,
+        domain: d,
+        belowThreshold: below,
+        createdAt: w.purchasedAt ?? new Date().toISOString()
+      });
     }
+    events.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     const total = purchased.length;
     return {
       totalPermissions: total,
       freedomScore,
       selfPermissions,
       selfPermissionRatio: total > 0 ? selfPermissions / total : 0,
-      byDomain
+      byDomain,
+      events
     };
   }
 };

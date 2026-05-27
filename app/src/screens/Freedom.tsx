@@ -1,11 +1,12 @@
 // Карта / «список да» — SPEC §8.
 // 6 region tiles (clothes, leisure, comfort, health, joy, food) with states
-// fogged → opened → thriving driven by permission_events counts.
-// Freedom score is framed as "вернул себе на X", never "потратил".
+// fogged → opened → thriving driven by permission_events counts. Tap a tile
+// to drill into the things you allowed yourself in that area.
 
 import { useEffect, useState } from 'react';
-import type { LifeDomain, UserFreedom } from '@afford/shared';
+import type { EnrichedEvent, LifeDomain, UserFreedom } from '@afford/shared';
 import { ru } from '../i18n/ru';
+import { Sheet } from '../components/Sheet';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 
@@ -42,12 +43,17 @@ function pluralRu(n: number): string {
   return ru.freedom_count_many.replace('{n}', String(n));
 }
 
+function formatDateShort(ts: string, lang = 'ru'): string {
+  return new Date(ts).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' });
+}
+
 interface Props {
   onBack: () => void;
 }
 
 export function FreedomScreen({ onBack }: Props) {
   const [data, setData] = useState<UserFreedom | null>(null);
+  const [openDomain, setOpenDomain] = useState<DomainMeta | null>(null);
 
   useEffect(() => {
     a().freedom().then(setData).catch(() => setData(null));
@@ -64,6 +70,12 @@ export function FreedomScreen({ onBack }: Props) {
 
   const empty = data.totalPermissions === 0;
   const scoreText = Math.round(data.freedomScore).toLocaleString('ru-RU');
+  const eventsByDomain: Record<LifeDomain, EnrichedEvent[]> = {} as Record<LifeDomain, EnrichedEvent[]>;
+  for (const d of DOMAINS) eventsByDomain[d.key] = [];
+  eventsByDomain.other = [];
+  for (const e of data.events) {
+    (eventsByDomain[e.domain] ??= []).push(e);
+  }
 
   return (
     <main className="shell shell-home">
@@ -86,37 +98,104 @@ export function FreedomScreen({ onBack }: Props) {
         </div>
       </header>
 
-      {empty && (
+      {empty ? (
         <section className="empty-state">
           <div className="empty-mark" aria-hidden>✦</div>
           <h2 className="empty-title">{ru.freedom_empty_title}</h2>
           <p className="empty-body">{ru.freedom_empty_body}</p>
         </section>
+      ) : (
+        <section className="freedom-grid">
+          {DOMAINS.map((d) => {
+            const agg = data.byDomain[d.key];
+            const state = domainState(agg.count);
+            const lastEvent = eventsByDomain[d.key]?.[0];
+            return (
+              <button
+                key={d.key}
+                type="button"
+                className={`freedom-tile state-${state}`}
+                onClick={() => setOpenDomain(d)}
+              >
+                <div className="freedom-tile-emoji" aria-hidden>{d.emoji}</div>
+                <div className="freedom-tile-name">{d.label}</div>
+                {state === 'fogged' ? (
+                  <div className="freedom-tile-meta freedom-tile-meta-muted">—</div>
+                ) : (
+                  <>
+                    <div className="freedom-tile-meta">{pluralRu(agg.count)}</div>
+                    {lastEvent?.wishTitle && (
+                      <div className="freedom-tile-last" title={lastEvent.wishTitle}>
+                        {lastEvent.wishTitle}
+                      </div>
+                    )}
+                  </>
+                )}
+                {agg.count === 1 && (
+                  <div className="freedom-tile-badge">{ru.freedom_first_badge}</div>
+                )}
+                {state === 'thriving' && (
+                  <div className="freedom-tile-badge thriving">{ru.freedom_thriving_badge}</div>
+                )}
+              </button>
+            );
+          })}
+        </section>
       )}
 
-      <section className="freedom-grid">
-        {DOMAINS.map((d) => {
-          const agg = data.byDomain[d.key];
-          const state = domainState(agg.count);
-          return (
-            <article key={d.key} className={`freedom-tile state-${state}`}>
-              <div className="freedom-tile-emoji" aria-hidden>{d.emoji}</div>
-              <div className="freedom-tile-name">{d.label}</div>
-              {state === 'fogged' ? (
-                <div className="freedom-tile-meta freedom-tile-meta-muted">—</div>
-              ) : (
-                <div className="freedom-tile-meta">{pluralRu(agg.count)}</div>
-              )}
-              {agg.count === 1 && (
-                <div className="freedom-tile-badge">{ru.freedom_first_badge}</div>
-              )}
-              {state === 'thriving' && (
-                <div className="freedom-tile-badge thriving">{ru.freedom_thriving_badge}</div>
-              )}
-            </article>
-          );
-        })}
-      </section>
+      {openDomain && (
+        <DomainSheet
+          domain={openDomain}
+          events={eventsByDomain[openDomain.key] ?? []}
+          onClose={() => setOpenDomain(null)}
+        />
+      )}
     </main>
+  );
+}
+
+interface DomainSheetProps {
+  domain: DomainMeta;
+  events: EnrichedEvent[];
+  onClose: () => void;
+}
+
+function DomainSheet({ domain, events, onClose }: DomainSheetProps) {
+  const total = events.length;
+  const sum = Math.round(events.reduce((s, e) => s + e.value, 0));
+
+  return (
+    <Sheet open={true} onClose={onClose} title={`${domain.emoji} ${domain.label}`}>
+      <div className="domain-sheet-meta">
+        {total === 0
+          ? ru.freedom_domain_empty
+          : <>
+              {pluralRu(total)}
+              {sum > 0 && <> · {sum.toLocaleString('ru-RU')}</>}
+            </>
+        }
+      </div>
+
+      {total > 0 && (
+        <ul className="domain-event-list">
+          {events.map((e) => (
+            <li key={e.id} className="domain-event">
+              <div className="domain-event-body">
+                <div className="domain-event-title">
+                  {e.wishTitle || '—'}
+                </div>
+                <div className="domain-event-meta">
+                  {formatDateShort(e.createdAt)}
+                  {e.value > 0 && <> · {Math.round(e.value).toLocaleString('ru-RU')} {e.wishCurrency || ''}</>}
+                  {e.belowThreshold && (
+                    <> · <span className="domain-event-below">{ru.freedom_below_pill}</span></>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Sheet>
   );
 }

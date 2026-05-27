@@ -123,6 +123,9 @@ export const ru = {
   freedom_count_singular: '{n} раз',
   freedom_count_few: '{n} раза',
   freedom_count_many: '{n} раз',
+  freedom_last_label: 'последнее',
+  freedom_domain_empty: 'пока пусто здесь — но это ненадолго.',
+  freedom_below_pill: 'без порога',
 
   // settings sheet
   settings_title: 'настройки',

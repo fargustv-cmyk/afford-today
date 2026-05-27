@@ -142,4 +142,19 @@ export interface UserFreedom {
   selfPermissions: number;       // count where below_threshold = true
   selfPermissionRatio: number;   // 0..1
   byDomain: Record<LifeDomain, DomainAgg>;
+  events: EnrichedEvent[];       // newest first, all domains
+}
+
+// PermissionEvent joined with its wish's display fields, so the client
+// can show "what you allowed yourself" without an extra round-trip.
+export interface EnrichedEvent {
+  id: string;
+  wishId: string | null;
+  wishTitle: string | null;
+  wishPrice: number | null;
+  wishCurrency: string | null;
+  value: number;
+  domain: LifeDomain;
+  belowThreshold: boolean;
+  createdAt: string;
 }
