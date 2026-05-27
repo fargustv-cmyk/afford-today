@@ -30,8 +30,8 @@ export async function createEvent(
 }
 
 // Equivalent of schema.sql `user_freedom` view + per-domain aggregation.
-// Returned to /api/freedom for the Map screen (SPEC §8).
-export async function getUserFreedom(userId: number): Promise<UserFreedom> {
+// Caller (routes/freedom.ts) attaches the joined `events` array.
+export async function getUserFreedom(userId: number): Promise<Omit<UserFreedom, 'events'>> {
   const userEvents = events.filter((e) => e.userId === userId);
 
   const byDomain = Object.fromEntries(
