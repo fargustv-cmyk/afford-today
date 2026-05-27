@@ -111,3 +111,18 @@ export interface OgPreview {
   imageUrl: string | null;
   price: number | null;
 }
+
+export interface DomainAgg {
+  count: number;
+  value: number;
+  firstAt: string | null;
+}
+
+// Mirrors schema.sql `user_freedom` view + a per-domain breakdown.
+export interface UserFreedom {
+  totalPermissions: number;
+  freedomScore: number;
+  selfPermissions: number;       // count where below_threshold = true
+  selfPermissionRatio: number;   // 0..1
+  byDomain: Record<LifeDomain, DomainAgg>;
+}

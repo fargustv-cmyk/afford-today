@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { LifeDomain, PermissionEvent } from '@afford/shared';
+import type { DomainAgg, LifeDomain, PermissionEvent, UserFreedom } from '@afford/shared';
+
+const ALL_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
 
 const events: PermissionEvent[] = [];
 
@@ -25,4 +27,29 @@ export async function createEvent(
   };
   events.push(event);
   return event;
+}
+
+// Equivalent of schema.sql `user_freedom` view + per-domain aggregation.
+// Returned to /api/freedom for the Map screen (SPEC §8).
+export async function getUserFreedom(userId: number): Promise<UserFreedom> {
+  const userEvents = events.filter((e) => e.userId === userId);
+
+  const byDomain = Object.fromEntries(
+    ALL_DOMAINS.map((d) => [d, { count: 0, value: 0, firstAt: null } as DomainAgg])
+  ) as Record<LifeDomain, DomainAgg>;
+
+  let freedomScore = 0;
+  let selfPermissions = 0;
+  for (const e of userEvents) {
+    const agg = byDomain[e.domain];
+    agg.count++;
+    agg.value += e.value;
+    if (!agg.firstAt || e.createdAt < agg.firstAt) agg.firstAt = e.createdAt;
+    freedomScore += e.value;
+    if (e.belowThreshold) selfPermissions++;
+  }
+
+  const totalPermissions = userEvents.length;
+  const selfPermissionRatio = totalPermissions > 0 ? selfPermissions / totalPermissions : 0;
+  return { totalPermissions, freedomScore, selfPermissions, selfPermissionRatio, byDomain };
 }

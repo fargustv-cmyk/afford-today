@@ -96,7 +96,24 @@ export const ru = {
   feeling_joy: 'кайф',
   feeling_scared_but_good: 'страшно, но кайф',
   feeling_empty: 'пусто',
-  feeling_guilt: 'накрыло'
+  feeling_guilt: 'накрыло',
+
+  // map / "Список да" (SPEC §8)
+  home_freedom_link_score: 'ты вернул(а) себе на {amount}',
+  home_freedom_link_meta: 'за {count} разрешений · {below} без порога',
+  freedom_back: '← к желаниям',
+  freedom_title: 'карта свободы',
+  freedom_score_label: 'ты вернул(а) себе на',
+  freedom_meta_count: '{count} разрешений',
+  freedom_meta_below: '{n} из них без порога',
+  freedom_meta_empty: 'пока ни одного — но это ненадолго',
+  freedom_empty_title: 'тут будет твоё «да»',
+  freedom_empty_body: 'когда отметишь первую покупку — она оставит след в одной из категорий. дальше карта будет расти под тебя.',
+  freedom_first_badge: 'впервые!',
+  freedom_thriving_badge: 'цветёт',
+  freedom_count_singular: '{n} раз',
+  freedom_count_few: '{n} раза',
+  freedom_count_many: '{n} раз'
 } as const;
 
 export type RuKey = keyof typeof ru;

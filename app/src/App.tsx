@@ -6,8 +6,9 @@ import { api } from './api/client';
 import { isPreview, mockMe } from './lib/preview';
 import { Home } from './screens/Home';
 import { WishScreen } from './screens/Wish';
+import { FreedomScreen } from './screens/Freedom';
 
-type Screen = { kind: 'home' } | { kind: 'wish'; id: string };
+type Screen = { kind: 'home' } | { kind: 'wish'; id: string } | { kind: 'freedom' };
 
 type State =
   | { kind: 'loading' }
@@ -45,7 +46,15 @@ export function App() {
     if (screen.kind === 'wish') {
       return <WishScreen wishId={screen.id} onBack={() => setScreen({ kind: 'home' })} />;
     }
-    return <Home onOpenWish={(id) => setScreen({ kind: 'wish', id })} />;
+    if (screen.kind === 'freedom') {
+      return <FreedomScreen onBack={() => setScreen({ kind: 'home' })} />;
+    }
+    return (
+      <Home
+        onOpenWish={(id) => setScreen({ kind: 'wish', id })}
+        onOpenFreedom={() => setScreen({ kind: 'freedom' })}
+      />
+    );
   }
 
   return (

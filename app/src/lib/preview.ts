@@ -1,4 +1,14 @@
-import type { CheckIn, Feeling, MeResponse, MicroPermissionTemplate, Step, User, Wish } from '@afford/shared';
+import type {
+  CheckIn,
+  Feeling,
+  LifeDomain,
+  MeResponse,
+  MicroPermissionTemplate,
+  Step,
+  User,
+  UserFreedom,
+  Wish
+} from '@afford/shared';
 
 export const isPreview = (): boolean =>
   new URLSearchParams(window.location.search).get('preview') === '1';
@@ -174,5 +184,32 @@ export const previewApi = {
       createdAt: new Date().toISOString()
     };
     return { checkIn: ci };
+  },
+  freedom: async (): Promise<UserFreedom> => {
+    const purchased = mockWishes.filter((w) => w.purchasedAt);
+    const ALL_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
+    const byDomain = Object.fromEntries(
+      ALL_DOMAINS.map((d) => [d, { count: 0, value: 0, firstAt: null as string | null }])
+    ) as UserFreedom['byDomain'];
+    let freedomScore = 0;
+    let selfPermissions = 0;
+    for (const w of purchased) {
+      const d = w.domain;
+      const value = w.price ?? 0;
+      const below = w.pointsEarned < w.pointsRequired;
+      byDomain[d].count++;
+      byDomain[d].value += value;
+      if (!byDomain[d].firstAt) byDomain[d].firstAt = w.purchasedAt;
+      freedomScore += value;
+      if (below) selfPermissions++;
+    }
+    const total = purchased.length;
+    return {
+      totalPermissions: total,
+      freedomScore,
+      selfPermissions,
+      selfPermissionRatio: total > 0 ? selfPermissions / total : 0,
+      byDomain
+    };
   }
 };

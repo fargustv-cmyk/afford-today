@@ -6,6 +6,7 @@ import type {
   MicroPermissionTemplate,
   OgPreview,
   Step,
+  UserFreedom,
   Wish
 } from '@afford/shared';
 import { tg } from '../telegram';
@@ -91,5 +92,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ feeling, note: note || undefined })
     });
+  },
+  freedom(): Promise<UserFreedom> {
+    return request<UserFreedom>('/api/freedom');
   }
 };

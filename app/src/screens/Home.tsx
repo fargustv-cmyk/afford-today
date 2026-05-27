@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Wish } from '@afford/shared';
+import type { UserFreedom, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { WishCard } from '../components/WishCard';
 import { api } from '../api/client';
@@ -8,10 +8,16 @@ import { AddWishSheet } from './AddWish';
 
 const a = () => (isPreview() ? previewApi : api);
 
-export function Home({ onOpenWish }: { onOpenWish: (id: string) => void }) {
+interface HomeProps {
+  onOpenWish: (id: string) => void;
+  onOpenFreedom: () => void;
+}
+
+export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
+  const [freedom, setFreedom] = useState<UserFreedom | null>(null);
 
   const reload = () => {
     setLoading(true);
@@ -20,6 +26,7 @@ export function Home({ onOpenWish }: { onOpenWish: (id: string) => void }) {
       .then(({ wishes }) => setWishes(wishes))
       .catch(() => setWishes([]))
       .finally(() => setLoading(false));
+    a().freedom().then(setFreedom).catch(() => setFreedom(null));
   };
 
   useEffect(reload, []);
@@ -39,6 +46,25 @@ export function Home({ onOpenWish }: { onOpenWish: (id: string) => void }) {
           </button>
         )}
       </header>
+
+      {freedom && freedom.totalPermissions > 0 && (
+        <button type="button" className="freedom-strip" onClick={onOpenFreedom}>
+          <div className="freedom-strip-body">
+            <div className="freedom-strip-score">
+              {ru.home_freedom_link_score.replace(
+                '{amount}',
+                Math.round(freedom.freedomScore).toLocaleString('ru-RU')
+              )}
+            </div>
+            <div className="freedom-strip-meta">
+              {ru.home_freedom_link_meta
+                .replace('{count}', String(freedom.totalPermissions))
+                .replace('{below}', String(freedom.selfPermissions))}
+            </div>
+          </div>
+          <span className="freedom-strip-chev" aria-hidden>→</span>
+        </button>
+      )}
 
       {empty ? (
         <section className="empty-state">
