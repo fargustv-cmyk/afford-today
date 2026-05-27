@@ -122,6 +122,17 @@ export const ru = {
   freedom_count_few: '{n} раза',
   freedom_count_many: '{n} раз',
 
+  // settings sheet
+  settings_title: 'настройки',
+  settings_interpretation_label: 'как тебе ближе?',
+  settings_interpretation_hint: 'влияет на дефолт «+ шага» и порядок библиотеки. в любой момент можно поменять.',
+  settings_interp_permission: '🌿 позволения',
+  settings_interp_permission_desc: 'разрешать себе нечто приятное',
+  settings_interp_effort: '💪 труд',
+  settings_interp_effort_desc: 'делать и заслуживать горжусь',
+  settings_interp_both: '✨ и то и то',
+  settings_interp_both_desc: 'по настроению, без перекосов',
+
   // onboarding (SPEC §10, rule-of-90: ends with an immediate "Можно!")
   onboarding_1_title: 'ты много работаешь.',
   onboarding_1_body: 'а тратить на себя без вины — почему-то сложно. знакомо?',

@@ -3,7 +3,7 @@
 //
 // Contract is intentionally narrow so the swap is a one-file change.
 
-import type { User } from '@afford/shared';
+import type { User, UserSettings } from '@afford/shared';
 import type { TgUser } from '../lib/verifyInitData.js';
 
 const users = new Map<number, User>();
@@ -39,4 +39,14 @@ export async function getUser(id: number): Promise<User | null> {
 
 export async function listAllUsers(): Promise<User[]> {
   return Array.from(users.values());
+}
+
+export async function updateUserSettings(
+  userId: number,
+  patch: Partial<UserSettings>
+): Promise<User | null> {
+  const u = users.get(userId);
+  if (!u) return null;
+  u.settings = { ...u.settings, ...patch };
+  return u;
 }

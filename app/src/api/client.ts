@@ -8,6 +8,7 @@ import type {
   Step,
   StepCategory,
   UserFreedom,
+  UserSettings,
   Wish
 } from '@afford/shared';
 import { tg } from '../telegram';
@@ -101,5 +102,11 @@ export const api = {
   },
   freedom(): Promise<UserFreedom> {
     return request<UserFreedom>('/api/freedom');
+  },
+  updateSettings(patch: Partial<UserSettings>): Promise<MeResponse> {
+    return request<MeResponse>('/api/me/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(patch)
+    });
   }
 };

@@ -8,6 +8,7 @@ import type {
   StepCategory,
   User,
   UserFreedom,
+  UserSettings,
   Wish
 } from '@afford/shared';
 
@@ -27,7 +28,7 @@ export const mockUser: User = {
   firstName: 'preview'
 };
 
-export const mockMe: MeResponse = { user: mockUser, unlocked: false };
+export let mockMe: MeResponse = { user: mockUser, unlocked: false };
 
 let mockId = 1;
 const mockWishes: Wish[] = [
@@ -202,6 +203,11 @@ export const previewApi = {
       createdAt: new Date().toISOString()
     };
     return { checkIn: ci };
+  },
+  updateSettings: async (patch: Partial<UserSettings>): Promise<MeResponse> => {
+    mockUser.settings = { ...mockUser.settings, ...patch };
+    mockMe = { user: mockUser, unlocked: mockMe.unlocked };
+    return mockMe;
   },
   freedom: async (): Promise<UserFreedom> => {
     const purchased = mockWishes.filter((w) => w.purchasedAt);

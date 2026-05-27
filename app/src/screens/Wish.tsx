@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
+import type { InterpretationMode, MeResponse, MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
@@ -14,10 +14,17 @@ const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
 interface Props {
   wishId: string;
+  me: MeResponse;
   onBack: () => void;
 }
 
-export function WishScreen({ wishId, onBack }: Props) {
+export function WishScreen({ wishId, me, onBack }: Props) {
+  const interpretation =
+    (me.user.settings.interpretation as InterpretationMode | undefined) ?? 'both';
+  const defaultStepCategory: StepCategory =
+    interpretation === 'effort' ? 'effort' : 'permission';
+  const sectionOrder: StepCategory[] =
+    interpretation === 'effort' ? ['effort', 'permission'] : ['permission', 'effort'];
   const [wish, setWish] = useState<Wish | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
@@ -177,7 +184,7 @@ export function WishScreen({ wishId, onBack }: Props) {
               <strong className="micro-title">{ru.wish_steps_empty_title}</strong>
               <p className="micro-body">{ru.wish_steps_empty_body}</p>
 
-              {(['permission', 'effort'] as StepCategory[]).map((cat) => {
+              {sectionOrder.map((cat) => {
                 const list = templates.filter((t) => t.category === cat);
                 if (list.length === 0) return null;
                 return (
@@ -227,6 +234,7 @@ export function WishScreen({ wishId, onBack }: Props) {
         onClose={() => setAddOpen(false)}
         onCreated={onStepCreated}
         wishId={wishId}
+        defaultCategory={defaultStepCategory}
       />
 
       {mozhno && (
@@ -277,15 +285,16 @@ interface AddStepProps {
   onClose: () => void;
   onCreated: (s: Step) => void;
   wishId: string;
+  defaultCategory: StepCategory;
 }
 
-function AddStepSheet({ open, onClose, onCreated, wishId }: AddStepProps) {
+function AddStepSheet({ open, onClose, onCreated, wishId, defaultCategory }: AddStepProps) {
   const [title, setTitle] = useState('');
   const [points, setPoints] = useState<10 | 25 | 50>(25);
-  const [category, setCategory] = useState<StepCategory>('permission');
+  const [category, setCategory] = useState<StepCategory>(defaultCategory);
   const [saving, setSaving] = useState(false);
 
-  const reset = () => { setTitle(''); setPoints(25); setCategory('permission'); };
+  const reset = () => { setTitle(''); setPoints(25); setCategory(defaultCategory); };
 
   const onSave = async () => {
     if (!title.trim() || saving) return;

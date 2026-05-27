@@ -17,6 +17,9 @@ export type StepKind = 'step' | 'micro_permission';
 // rate; the split is just so the user can see "what I allowed myself to do"
 // vs "what I did as effort" separately.
 export type StepCategory = 'permission' | 'effort';
+// User's preferred lens for tasks. Soft preference — affects defaults and
+// ordering, never hides functionality.
+export type InterpretationMode = 'permission' | 'effort' | 'both';
 export type Feeling =
   | 'zero_guilt'
   | 'joy'
@@ -33,9 +36,15 @@ export interface User {
   subscriptionUntil: string | null;
   giftedTokens: number;
   selfPermissionFactor: number; // 0.4 — 1.0
-  settings: Record<string, unknown>;
+  settings: UserSettings;
   // Convenience derived from initData, not stored
   firstName?: string;
+}
+
+export interface UserSettings {
+  interpretation?: InterpretationMode;
+  notificationsEnabled?: boolean;
+  [key: string]: unknown;
 }
 
 export interface Wish {
