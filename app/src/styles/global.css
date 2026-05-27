@@ -274,6 +274,31 @@ html, body {
   gap: 12px;
 }
 
+.wish-add-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1.5px dashed rgba(120, 80, 40, 0.28);
+  border-radius: 20px;
+  padding: 18px;
+  color: var(--ink);
+  font-family: 'Onest', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.wish-add-card:active { transform: scale(0.99); }
+.wish-add-plus {
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.wish-add-label { letter-spacing: 0.01em; }
+
 .wish-card {
   display: flex;
   gap: 14px;

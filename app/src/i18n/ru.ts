@@ -12,6 +12,7 @@ export const ru = {
   home_overline: 'твой вишлист',
   home_title: 'хочу',
   home_add: '+ хочу',
+  home_add_more: '+ ещё одно желание',
   home_empty_title: 'чего ты хочешь?',
   home_empty_body: 'не «что полезно», а что *хочется*. одна штука — для начала.',
   home_empty_cta: '+ добавить первое желание',

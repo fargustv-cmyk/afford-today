@@ -91,6 +91,10 @@ export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
           {wishes.map((w) => (
             <WishCard key={w.id} wish={w} onClick={() => onOpenWish(w.id)} />
           ))}
+          <button type="button" className="wish-add-card" onClick={() => setAddOpen(true)}>
+            <span className="wish-add-plus" aria-hidden>＋</span>
+            <span className="wish-add-label">{ru.home_add_more}</span>
+          </button>
         </section>
       )}
 
