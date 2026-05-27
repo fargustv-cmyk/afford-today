@@ -5,6 +5,7 @@ import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
+import { tg } from '../telegram';
 
 const a = () => (isPreview() ? previewApi : api);
 
@@ -214,7 +215,22 @@ export function WishScreen({ wishId, onBack }: Props) {
         <Mozhno
           wish={wish}
           belowThreshold={mozhno.belowThreshold}
-          onShare={() => {/* prompt 5: share card */}}
+          onShare={async () => {
+            try {
+              const { shareUrl } = await a().share(wishId);
+              // In Telegram: open the native share-to-chat sheet. The chat
+              // client unfurls the PNG inline.
+              if (tg?.openTelegramLink) {
+                tg.openTelegramLink(
+                  `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`
+                );
+              } else if (typeof window !== 'undefined') {
+                window.open(shareUrl, '_blank');
+              }
+            } catch {
+              // soft fail — share is bonus
+            }
+          }}
           onContinue={() => {
             const close = mozhno.closeToHome;
             setMozhno(null);

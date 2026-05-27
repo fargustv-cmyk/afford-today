@@ -6,6 +6,7 @@ import { env, assertProductionEnv } from './env.js';
 import { authRoutes } from './routes/auth.js';
 import { wishesRoutes } from './routes/wishes.js';
 import { stepsRoutes } from './routes/steps.js';
+import { shareRoutes } from './routes/share.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,8 +17,10 @@ async function buildApp() {
     bodyLimit: 256 * 1024 // 256 KB — we don't accept large bodies
   });
 
-  app.addHook('onSend', async (_req, reply) => {
+  app.addHook('onSend', async (req, reply) => {
     // Mini App caching is a known landmine; force fresh fetches.
+    // EXCEPT for share card PNGs which we explicitly want CDN-cached.
+    if (req.url.startsWith('/share/')) return;
     reply.header('Cache-Control', 'no-store, must-revalidate');
   });
 
@@ -36,6 +39,7 @@ async function buildApp() {
   await app.register(authRoutes);
   await app.register(wishesRoutes);
   await app.register(stepsRoutes);
+  await app.register(shareRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 

@@ -77,5 +77,11 @@ export const api = {
       `/api/wishes/${wishId}/mark-bought`,
       { method: 'POST' }
     );
+  },
+  share(wishId: string): Promise<{ imageUrl: string; shareUrl: string }> {
+    return request<{ imageUrl: string; shareUrl: string }>(
+      `/api/wishes/${wishId}/share`,
+      { method: 'POST' }
+    );
   }
 };

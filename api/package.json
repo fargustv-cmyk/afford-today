@@ -12,6 +12,7 @@
   "dependencies": {
     "@afford/shared": "*",
     "@fastify/static": "^7.0.4",
+    "@resvg/resvg-js": "^2.6.2",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
     "node-html-parser": "^6.1.13"

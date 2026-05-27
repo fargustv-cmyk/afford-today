@@ -158,5 +158,11 @@ export const previewApi = {
     wish.status = 'purchased';
     wish.purchasedAt = new Date().toISOString();
     return { wish, belowThreshold, justPurchased: true };
+  },
+  share: async (wishId: string) => {
+    // In ?preview=1 mode we don't actually have a server to render the card;
+    // open a placeholder so the share button does *something* visible.
+    const url = `${window.location.origin}/share/preview-${wishId}.png`;
+    return { imageUrl: url, shareUrl: url };
   }
 };
