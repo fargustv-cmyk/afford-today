@@ -28,6 +28,16 @@ async function buildApp() {
 
   // Auth gate for everything mutating except /api/me (which sets the user).
   app.addHook('preHandler', async (req, reply) => {
+    // /api/og can also accept a debug bypass via ?test=<OG_TEST_TOKEN> when the
+    // env var is configured — useful for diagnosing anti-bot behaviour on the
+    // production IP. Leave OG_TEST_TOKEN unset in normal operation.
+    if (req.url.startsWith('/api/og')) {
+      if (env.OG_TEST_TOKEN) {
+        const u = new URL(req.url, 'http://x');
+        const t = u.searchParams.get('test');
+        if (t && t === env.OG_TEST_TOKEN) return; // bypass auth
+      }
+    }
     if (
       req.url.startsWith('/api/wishes') ||
       req.url.startsWith('/api/steps') ||

@@ -106,7 +106,10 @@ export async function wishesRoutes(app: FastifyInstance) {
   });
 
   // OG preview — auth-gated so randos can't pivot through it as an open proxy.
-  app.get<{ Querystring: OgQuery; Reply: OgPreview | { error: string } }>(
+  // (Server-level preHandler enforces this for everything under /api/og.)
+  // Optional one-shot debug bypass: ?test=<OG_TEST_TOKEN>. Used to diagnose
+  // anti-bot behaviour from the production IP; safe to leave unset in prod.
+  app.get<{ Querystring: OgQuery & { test?: string }; Reply: OgPreview | { error: string } }>(
     '/api/og',
     async (req, reply) => {
       const url = req.query?.url;

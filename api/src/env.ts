@@ -18,6 +18,7 @@ export const env = {
   DATABASE_URL: optional('DATABASE_URL'),
   PUBLIC_APP_URL: optional('PUBLIC_APP_URL', 'https://afford-today.onrender.com'),
   CRON_SECRET: optional('CRON_SECRET'),
+  OG_TEST_TOKEN: optional('OG_TEST_TOKEN'), // если задан — /api/og?test=<token>&url=… работает без initData
   NODE_ENV: optional('NODE_ENV', 'development')
 };
 
