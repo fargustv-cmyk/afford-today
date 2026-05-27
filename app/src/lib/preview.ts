@@ -70,6 +70,7 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-occasion',     title: 'Надень то, что бережёшь «на особый случай»',  suggestedPoints: 10, domain: 'clothes', category: 'permission', isPremium: false },
   { id: 'pm-underwear',    title: 'Купи бельё, в котором будешь себе нравиться', suggestedPoints: 20, domain: 'clothes', category: 'permission', isPremium: false },
   { id: 'pm-compliment',   title: 'Прими комплимент про одежду, не отнекивайся', suggestedPoints: 10, domain: 'clothes', category: 'permission', isPremium: false },
+  { id: 'pm-shoes',        title: 'Купи качественную обувь, не аналог',          suggestedPoints: 30, domain: 'clothes', category: 'permission', isPremium: false },
   // permission — comfort
   { id: 'pm-bath',         title: 'Полежи в горячей ванне',                      suggestedPoints: 20, domain: 'comfort', category: 'permission', isPremium: false },
   { id: 'pm-blanket',      title: 'Купи плед, в который хочется завернуться',    suggestedPoints: 25, domain: 'comfort', category: 'permission', isPremium: false },
@@ -77,6 +78,10 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-headphones',   title: 'Купи хорошие наушники с шумоподавлением',     suggestedPoints: 30, domain: 'comfort', category: 'permission', isPremium: false },
   { id: 'pm-candle',       title: 'Зажги ароматную свечу или благовоние',        suggestedPoints: 10, domain: 'comfort', category: 'permission', isPremium: false },
   { id: 'pm-offline',      title: 'Не отвечай в чатах два часа',                 suggestedPoints: 15, domain: 'comfort', category: 'permission', isPremium: false },
+  { id: 'pm-towel',        title: 'Замени старое полотенце на новое мягкое',     suggestedPoints: 15, domain: 'comfort', category: 'permission', isPremium: false },
+  { id: 'pm-silence',      title: 'Посиди в тишине 10 минут',                    suggestedPoints: 10, domain: 'comfort', category: 'permission', isPremium: false },
+  { id: 'pm-long-shower',  title: 'Прими долгий душ, не торопясь',               suggestedPoints: 10, domain: 'comfort', category: 'permission', isPremium: false },
+  { id: 'pm-dnd',          title: 'Включи «не беспокоить» на полдня',            suggestedPoints: 20, domain: 'comfort', category: 'permission', isPremium: false },
   // permission — health
   { id: 'pm-sleep',        title: 'Засни без будильника в выходной',             suggestedPoints: 15, domain: 'health',  category: 'permission', isPremium: false },
   { id: 'pm-beauty',       title: 'Запишись к косметологу/парикмахеру',          suggestedPoints: 25, domain: 'health',  category: 'permission', isPremium: false },
@@ -84,6 +89,8 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-dayoff',       title: 'Возьми отгул, потому что устал(а)',           suggestedPoints: 30, domain: 'health',  category: 'permission', isPremium: false },
   { id: 'pm-vitamins',     title: 'Купи витамины, что давно нужны',              suggestedPoints: 15, domain: 'health',  category: 'permission', isPremium: false },
   { id: 'pm-doctor-postp', title: 'Запишись к врачу по тому, что откладываешь',  suggestedPoints: 25, domain: 'health',  category: 'permission', isPremium: false },
+  { id: 'pm-yoga',         title: 'Сходи на йогу или пилатес',                   suggestedPoints: 25, domain: 'health',  category: 'permission', isPremium: false },
+  { id: 'pm-face-mask',    title: 'Сделай маску для лица или волос',             suggestedPoints: 15, domain: 'health',  category: 'permission', isPremium: false },
   // permission — joy
   { id: 'pm-flowers',      title: 'Купи букет цветов себе',                      suggestedPoints: 20, domain: 'joy',     category: 'permission', isPremium: false },
   { id: 'pm-music',        title: 'Послушай любимую музыку в наушниках',         suggestedPoints: 10, domain: 'joy',     category: 'permission', isPremium: false },
@@ -91,6 +98,9 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-song-loop',    title: 'Поставь ту песню, что цепляет, на повтор',    suggestedPoints: 10, domain: 'joy',     category: 'permission', isPremium: false },
   { id: 'pm-dessert',      title: 'Купи десерт без всякого повода',              suggestedPoints: 15, domain: 'joy',     category: 'permission', isPremium: false },
   { id: 'pm-mug',          title: 'Завари чай/какао в красивой кружке',          suggestedPoints: 10, domain: 'joy',     category: 'permission', isPremium: false },
+  { id: 'pm-pastry',       title: 'Купи свежую выпечку утром',                   suggestedPoints: 15, domain: 'joy',     category: 'permission', isPremium: false },
+  { id: 'pm-icecream',     title: 'Возьми мороженое без повода',                 suggestedPoints: 10, domain: 'joy',     category: 'permission', isPremium: false },
+  { id: 'pm-album',        title: 'Послушай новый альбом любимого исполнителя',  suggestedPoints: 15, domain: 'joy',     category: 'permission', isPremium: false },
   // permission — leisure
   { id: 'pm-movie',        title: 'Посмотри фильм, что давно хотел(а)',          suggestedPoints: 20, domain: 'leisure', category: 'permission', isPremium: false },
   { id: 'pm-class',        title: 'Запишись на то, что приносит удовольствие',   suggestedPoints: 25, domain: 'leisure', category: 'permission', isPremium: false },
@@ -98,6 +108,8 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-cinema-solo',  title: 'Сходи в кино один(а), на тот сеанс, что хочешь', suggestedPoints: 25, domain: 'leisure', category: 'permission', isPremium: false },
   { id: 'pm-event',        title: 'Сходи на выставку или концерт',               suggestedPoints: 30, domain: 'leisure', category: 'permission', isPremium: false },
   { id: 'pm-game-shelf',   title: 'Открой ту игру/книгу, что лежит «потом»',     suggestedPoints: 20, domain: 'leisure', category: 'permission', isPremium: false },
+  { id: 'pm-nature',       title: 'Сходи на природу — в парк или к воде',        suggestedPoints: 25, domain: 'leisure', category: 'permission', isPremium: false },
+  { id: 'pm-bookstore',    title: 'Сходи в книжный, выбери книгу неспеша',       suggestedPoints: 20, domain: 'leisure', category: 'permission', isPremium: false },
   // permission — boundaries
   { id: 'pm-no',           title: 'Скажи «нет» тому, что не хочется',            suggestedPoints: 20, domain: 'other',   category: 'permission', isPremium: false },
   { id: 'pm-no-help',      title: 'Не помогай тем, кто не просил',               suggestedPoints: 15, domain: 'other',   category: 'permission', isPremium: false },
@@ -105,6 +117,8 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'pm-rest15',       title: 'Полежи просто так 15 минут без вины',         suggestedPoints: 10, domain: 'other',   category: 'permission', isPremium: false },
   { id: 'pm-useless',      title: 'Запрети себе быть полезным один час',         suggestedPoints: 20, domain: 'other',   category: 'permission', isPremium: false },
   { id: 'pm-weekend-off',  title: 'Не работай в выходной, даже если можно',      suggestedPoints: 25, domain: 'other',   category: 'permission', isPremium: false },
+  { id: 'pm-my-day',       title: 'Возьми день полностью для себя',              suggestedPoints: 30, domain: 'other',   category: 'permission', isPremium: false },
+  { id: 'pm-leave-early',  title: 'Уйди раньше, чем все',                        suggestedPoints: 20, domain: 'other',   category: 'permission', isPremium: false },
 
   // 💪 effort — food
   { id: 'ef-meal',         title: 'Приготовь себе нормальный обед',              suggestedPoints: 20, domain: 'food',    category: 'effort', isPremium: false },
@@ -112,11 +126,15 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'ef-groceries',    title: 'Купи нормальные продукты на неделю',          suggestedPoints: 25, domain: 'food',    category: 'effort', isPremium: false },
   { id: 'ef-batch',        title: 'Сделай заготовку на пару дней вперёд',        suggestedPoints: 25, domain: 'food',    category: 'effort', isPremium: false },
   { id: 'ef-no-coffee',    title: 'Замени утренний кофе на нормальный завтрак',  suggestedPoints: 15, domain: 'food',    category: 'effort', isPremium: false },
+  { id: 'ef-fridge',       title: 'Помой холодильник изнутри',                   suggestedPoints: 20, domain: 'food',    category: 'effort', isPremium: false },
+  { id: 'ef-expired',      title: 'Выкинь просроченное со шкафов и полок',       suggestedPoints: 15, domain: 'food',    category: 'effort', isPremium: false },
+  { id: 'ef-recipe',       title: 'Освой новый рецепт',                          suggestedPoints: 25, domain: 'food',    category: 'effort', isPremium: false },
   // effort — clothes
   { id: 'ef-closet',       title: 'Разбери шкаф с одеждой',                      suggestedPoints: 30, domain: 'clothes', category: 'effort', isPremium: false },
   { id: 'ef-laundry',      title: 'Постирай отложенное бельё',                   suggestedPoints: 15, domain: 'clothes', category: 'effort', isPremium: false },
   { id: 'ef-repair',       title: 'Зашей или отнеси в ремонт сломавшееся',       suggestedPoints: 20, domain: 'clothes', category: 'effort', isPremium: false },
   { id: 'ef-iron',         title: 'Выгладь то, что висит мятым',                 suggestedPoints: 10, domain: 'clothes', category: 'effort', isPremium: false },
+  { id: 'ef-slippers',     title: 'Купи новые тапочки/домашнее',                 suggestedPoints: 15, domain: 'clothes', category: 'effort', isPremium: false },
   // effort — comfort/home
   { id: 'ef-sweep',        title: 'Подмети или пропылесось пол',                 suggestedPoints: 15, domain: 'comfort', category: 'effort', isPremium: false },
   { id: 'ef-dishes',       title: 'Помой накопившуюся посуду',                   suggestedPoints: 10, domain: 'comfort', category: 'effort', isPremium: false },
@@ -126,16 +144,23 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'ef-junk-drawer',  title: 'Разбери ящик «всё подряд»',                   suggestedPoints: 20, domain: 'comfort', category: 'effort', isPremium: false },
   { id: 'ef-window',       title: 'Помой окно/раму',                             suggestedPoints: 20, domain: 'comfort', category: 'effort', isPremium: false },
   { id: 'ef-shelf',        title: 'Расхламь полку с книгами/безделушками',       suggestedPoints: 15, domain: 'comfort', category: 'effort', isPremium: false },
+  { id: 'ef-baseboard',    title: 'Помой плинтус',                               suggestedPoints: 20, domain: 'comfort', category: 'effort', isPremium: false },
+  { id: 'ef-dust',         title: 'Сотри пыль с полок и приборов',               suggestedPoints: 10, domain: 'comfort', category: 'effort', isPremium: false },
+  { id: 'ef-postpone-box', title: 'Разбери коробку «потом разберу»',             suggestedPoints: 25, domain: 'comfort', category: 'effort', isPremium: false },
+  { id: 'ef-descale',      title: 'Помой кофемашину/чайник от накипи',           suggestedPoints: 15, domain: 'comfort', category: 'effort', isPremium: false },
   // effort — health
   { id: 'ef-move',         title: 'Сделай растяжку или тренировку',              suggestedPoints: 15, domain: 'health',  category: 'effort', isPremium: false },
   { id: 'ef-walk-8k',      title: 'Пройди 8000 шагов сегодня',                   suggestedPoints: 20, domain: 'health',  category: 'effort', isPremium: false },
   { id: 'ef-food-log',     title: 'Запиши, что съел(а) за день',                 suggestedPoints: 10, domain: 'health',  category: 'effort', isPremium: false },
   { id: 'ef-water',        title: 'Выпей 2 литра воды',                          suggestedPoints: 10, domain: 'health',  category: 'effort', isPremium: false },
   { id: 'ef-doctor',       title: 'Сходи к стоматологу/врачу, что откладывал(а)',suggestedPoints: 30, domain: 'health',  category: 'effort', isPremium: false },
+  { id: 'ef-breath',       title: 'Сделай дыхательную практику 10 минут',        suggestedPoints: 15, domain: 'health',  category: 'effort', isPremium: false },
+  { id: 'ef-checkup',      title: 'Запишись на плановый медосмотр',              suggestedPoints: 25, domain: 'health',  category: 'effort', isPremium: false },
   // effort — joy
   { id: 'ef-plant',        title: 'Полей цветы или посади что-нибудь',           suggestedPoints: 10, domain: 'joy',     category: 'effort', isPremium: false },
   { id: 'ef-handmade',     title: 'Сделай что-то руками: рисуй / лепи / шей',    suggestedPoints: 25, domain: 'joy',     category: 'effort', isPremium: false },
   { id: 'ef-tidy-desk',    title: 'Прибери стол так, чтобы радовало глаз',       suggestedPoints: 10, domain: 'joy',     category: 'effort', isPremium: false },
+  { id: 'ef-tidy-corner',  title: 'Прибери любимый угол комнаты',                suggestedPoints: 10, domain: 'joy',     category: 'effort', isPremium: false },
   // effort — leisure/mind
   { id: 'ef-book',         title: 'Прочитай книгу 30 минут',                     suggestedPoints: 20, domain: 'leisure', category: 'effort', isPremium: false },
   { id: 'ef-learn',        title: 'Посмотри полезную программу или лекцию',      suggestedPoints: 20, domain: 'leisure', category: 'effort', isPremium: false },
@@ -150,7 +175,11 @@ const mockTemplates: MicroPermissionTemplate[] = [
   { id: 'ef-subs',         title: 'Закрой подписки, которые не используешь',     suggestedPoints: 15, domain: 'other',   category: 'effort', isPremium: false },
   { id: 'ef-spending',     title: 'Подсчитай траты за неделю',                   suggestedPoints: 20, domain: 'other',   category: 'effort', isPremium: false },
   { id: 'ef-paperwork',    title: 'Заполни ту бумажку, что висит',               suggestedPoints: 20, domain: 'other',   category: 'effort', isPremium: false },
-  { id: 'ef-report',       title: 'Напиши отчёт, что откладываешь',              suggestedPoints: 25, domain: 'other',   category: 'effort', isPremium: false }
+  { id: 'ef-report',       title: 'Напиши отчёт, что откладываешь',              suggestedPoints: 25, domain: 'other',   category: 'effort', isPremium: false },
+  { id: 'ef-backup',       title: 'Сделай резервную копию фотографий',           suggestedPoints: 20, domain: 'other',   category: 'effort', isPremium: false },
+  { id: 'ef-phone-clean',  title: 'Очисти телефон от старых файлов/фоток',       suggestedPoints: 20, domain: 'other',   category: 'effort', isPremium: false },
+  { id: 'ef-app-clean',    title: 'Удали 10 ненужных приложений',                suggestedPoints: 10, domain: 'other',   category: 'effort', isPremium: false },
+  { id: 'ef-chats-out',    title: 'Выйди из чатов, в которых не участвуешь',     suggestedPoints: 10, domain: 'other',   category: 'effort', isPremium: false }
 ];
 
 function maybeUnlockMockWish(w: Wish) {

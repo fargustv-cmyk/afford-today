@@ -180,6 +180,49 @@ html, body {
 }
 .interp-card-desc { font-size: 13px; color: var(--ink-soft); }
 
+/* Inline lens on Home */
+.interp-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.interp-strip-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-left: 2px;
+}
+.interp-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.interp-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--card);
+  border: 1.5px solid rgba(120, 80, 40, 0.14);
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-family: 'Onest', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  white-space: nowrap;
+  text-align: center;
+}
+.interp-chip:active:not(:disabled) { transform: scale(0.97); }
+.interp-chip.active {
+  border-color: var(--coral);
+  background: rgba(224, 83, 58, 0.08);
+  color: var(--ink);
+}
+.interp-chip:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .empty-state {
   background: var(--card);
   border: 1px solid rgba(120, 80, 40, 0.08);

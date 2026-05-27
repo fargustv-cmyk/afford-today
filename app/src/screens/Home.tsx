@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { MeResponse, UserFreedom, Wish } from '@afford/shared';
+import type { InterpretationMode, MeResponse, UserFreedom, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { WishCard } from '../components/WishCard';
-import { SettingsSheet } from '../components/Settings';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 import { AddWishSheet } from './AddWish';
@@ -16,12 +15,32 @@ interface HomeProps {
   onOpenFreedom: () => void;
 }
 
+const INTERP_OPTIONS: { key: InterpretationMode; label: string }[] = [
+  { key: 'permission', label: ru.settings_interp_permission },
+  { key: 'effort',     label: ru.settings_interp_effort     },
+  { key: 'both',       label: ru.settings_interp_both       }
+];
+
 export function Home({ me, onMeUpdate, onOpenWish, onOpenFreedom }: HomeProps) {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [freedom, setFreedom] = useState<UserFreedom | null>(null);
+  const [savingInterp, setSavingInterp] = useState<InterpretationMode | null>(null);
+
+  const currentInterp =
+    (me.user.settings.interpretation as InterpretationMode | undefined) ?? 'both';
+
+  const pickInterp = async (key: InterpretationMode) => {
+    if (key === currentInterp || savingInterp) return;
+    setSavingInterp(key);
+    try {
+      const next = await a().updateSettings({ interpretation: key });
+      onMeUpdate(next);
+    } finally {
+      setSavingInterp(null);
+    }
+  };
 
   const reload = () => {
     setLoading(true);
@@ -44,22 +63,29 @@ export function Home({ me, onMeUpdate, onOpenWish, onOpenFreedom }: HomeProps) {
           <div className="overline">{ru.home_overline}</div>
           <h1 className="title-serif">{ru.home_title}</h1>
         </div>
-        <div className="home-head-actions">
-          <button
-            type="button"
-            className="icon-btn-ghost"
-            onClick={() => setSettingsOpen(true)}
-            aria-label={ru.settings_title}
-          >
-            ⚙
+        {!empty && (
+          <button className="add-btn" onClick={() => setAddOpen(true)}>
+            {ru.home_add}
           </button>
-          {!empty && (
-            <button className="add-btn" onClick={() => setAddOpen(true)}>
-              {ru.home_add}
-            </button>
-          )}
-        </div>
+        )}
       </header>
+
+      <div className="interp-strip">
+        <div className="interp-strip-label">{ru.settings_interpretation_label}</div>
+        <div className="interp-chips">
+          {INTERP_OPTIONS.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              className={`interp-chip ${currentInterp === o.key ? 'active' : ''}`}
+              onClick={() => pickInterp(o.key)}
+              disabled={savingInterp !== null}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {freedom && freedom.totalPermissions > 0 && (
         <button type="button" className="freedom-strip" onClick={onOpenFreedom}>
@@ -103,13 +129,6 @@ export function Home({ me, onMeUpdate, onOpenWish, onOpenFreedom }: HomeProps) {
         onCreated={() => { setAddOpen(false); reload(); }}
       />
 
-      {settingsOpen && (
-        <SettingsSheet
-          me={me}
-          onClose={() => setSettingsOpen(false)}
-          onUpdate={onMeUpdate}
-        />
-      )}
     </main>
   );
 }
