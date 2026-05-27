@@ -5,6 +5,7 @@ import type {
   MeResponse,
   MicroPermissionTemplate,
   Step,
+  StepCategory,
   User,
   UserFreedom,
   Wish
@@ -49,15 +50,24 @@ const mockWishes: Wish[] = [
   }
 ];
 
+// Helper: mirrors server's listActiveWishes filter (active + unlocked only).
+const visibleWishes = () =>
+  mockWishes.filter((w) => w.status === 'active' || w.status === 'unlocked');
+
 const mockSteps: Step[] = [];
 let stepId = 1;
 
 const mockTemplates: MicroPermissionTemplate[] = [
-  { id: 'mt-coffee', title: 'Возьми сегодня кофе навынос', suggestedPoints: 15, domain: 'joy', isPremium: false },
-  { id: 'mt-taxi', title: 'Поезжай на такси, не жди автобус', suggestedPoints: 20, domain: 'comfort', isPremium: false },
-  { id: 'mt-meal', title: 'Закажи то блюдо, что реально хочешь', suggestedPoints: 15, domain: 'food', isPremium: false },
-  { id: 'mt-socks', title: 'Купи носки, которые давно откладывал(а)', suggestedPoints: 10, domain: 'clothes', isPremium: false },
-  { id: 'mt-fun', title: 'Запишись на то, что приносит удовольствие', suggestedPoints: 25, domain: 'leisure', isPremium: false }
+  { id: 'mt-coffee', title: 'Возьми сегодня кофе навынос', suggestedPoints: 15, domain: 'joy', category: 'permission', isPremium: false },
+  { id: 'mt-taxi', title: 'Поезжай на такси, не жди автобус', suggestedPoints: 20, domain: 'comfort', category: 'permission', isPremium: false },
+  { id: 'mt-meal', title: 'Закажи то блюдо, что реально хочешь', suggestedPoints: 15, domain: 'food', category: 'permission', isPremium: false },
+  { id: 'mt-socks', title: 'Купи носки, которые давно откладывал(а)', suggestedPoints: 10, domain: 'clothes', category: 'permission', isPremium: false },
+  { id: 'mt-fun', title: 'Запишись на то, что приносит удовольствие', suggestedPoints: 25, domain: 'leisure', category: 'permission', isPremium: false },
+  { id: 'ef-clean', title: 'Убраться в комнате', suggestedPoints: 25, domain: 'other', category: 'effort', isPremium: false },
+  { id: 'ef-emails', title: 'Разобрать накопившуюся почту', suggestedPoints: 20, domain: 'other', category: 'effort', isPremium: false },
+  { id: 'ef-bank', title: 'Закрыть надоевшую задачу с банком', suggestedPoints: 25, domain: 'other', category: 'effort', isPremium: false },
+  { id: 'ef-move', title: 'Сделать 20 приседаний / тренировку', suggestedPoints: 15, domain: 'health', category: 'effort', isPremium: false },
+  { id: 'ef-cook', title: 'Приготовить нормальный обед', suggestedPoints: 20, domain: 'food', category: 'effort', isPremium: false }
 ];
 
 function maybeUnlockMockWish(w: Wish) {
@@ -69,7 +79,8 @@ function maybeUnlockMockWish(w: Wish) {
 
 export const previewApi = {
   me: async () => mockMe,
-  listWishes: async () => ({ wishes: [...mockWishes] }),
+  // Mirror the server filter so purchased wishes don't linger on Home.
+  listWishes: async () => ({ wishes: visibleWishes() }),
   createWish: async (input: import('@afford/shared').CreateWishInput) => {
     const now = new Date().toISOString();
     const threshold =
@@ -109,13 +120,19 @@ export const previewApi = {
   listSteps: async (wishId: string) => ({
     steps: mockSteps.filter((s) => s.wishId === wishId)
   }),
-  createStep: async (wishId: string, title: string, points: number) => {
+  createStep: async (
+    wishId: string,
+    title: string,
+    points: number,
+    category: StepCategory = 'permission'
+  ) => {
     const step: Step = {
       id: `step-${stepId++}`,
       userId: 0,
       wishId,
       title,
       kind: 'step',
+      category,
       points,
       done: false,
       doneAt: null,
@@ -147,6 +164,7 @@ export const previewApi = {
       wishId,
       title: tpl.title,
       kind: 'micro_permission',
+      category: tpl.category,
       points: tpl.suggestedPoints,
       done: true,
       doneAt: now,

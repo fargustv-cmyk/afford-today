@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify';
-import type { Step, Wish, MicroPermissionTemplate } from '@afford/shared';
+import type { Step, StepCategory, Wish, MicroPermissionTemplate } from '@afford/shared';
 import { createStep, listSteps, markStepDone, getStep } from '../db/steps.js';
 import { getWishById, addPointsToWish } from '../db/wishes.js';
 import { MICRO_TEMPLATES, getMicroTemplate } from '../db/microPermissions.js';
 
 const VALID_POINTS = new Set([10, 25, 50]);
+const VALID_CATEGORIES: StepCategory[] = ['permission', 'effort'];
 
 export async function stepsRoutes(app: FastifyInstance) {
   app.get<{ Params: { wishId: string }; Reply: { steps: Step[] } | { error: string } }>(
@@ -23,7 +24,7 @@ export async function stepsRoutes(app: FastifyInstance) {
 
   app.post<{
     Params: { wishId: string };
-    Body: { title: string; points: number };
+    Body: { title: string; points: number; category?: StepCategory };
     Reply: { step: Step } | { error: string };
   }>('/api/wishes/:wishId/steps', async (req, reply) => {
     const userId = req.tgUser!.id;
@@ -32,7 +33,7 @@ export async function stepsRoutes(app: FastifyInstance) {
       reply.code(404);
       return { error: 'wish not found' };
     }
-    const { title, points } = req.body ?? ({} as { title?: string; points?: number });
+    const { title, points, category } = req.body ?? ({} as { title?: string; points?: number; category?: StepCategory });
     if (!title || typeof title !== 'string' || !title.trim()) {
       reply.code(400);
       return { error: 'title required' };
@@ -41,7 +42,8 @@ export async function stepsRoutes(app: FastifyInstance) {
       reply.code(400);
       return { error: 'points must be 10, 25 or 50' };
     }
-    const step = await createStep(userId, req.params.wishId, title, points);
+    const cat: StepCategory = category && VALID_CATEGORIES.includes(category) ? category : 'permission';
+    const step = await createStep(userId, req.params.wishId, title, points, 'step', cat);
     return { step };
   });
 
@@ -85,7 +87,14 @@ export async function stepsRoutes(app: FastifyInstance) {
       reply.code(404);
       return { error: 'template not found' };
     }
-    const step = await createStep(userId, wish.id, tpl.title, tpl.suggestedPoints, 'micro_permission');
+    const step = await createStep(
+      userId,
+      wish.id,
+      tpl.title,
+      tpl.suggestedPoints,
+      'micro_permission',
+      tpl.category
+    );
     const done = await markStepDone(userId, step.id);
     const updated = await addPointsToWish(wish.id, tpl.suggestedPoints);
     return { step: done ?? step, wish: updated };

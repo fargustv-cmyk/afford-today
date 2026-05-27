@@ -507,6 +507,40 @@ html, body {
 .step-row.done .step-title { text-decoration: line-through; }
 .step-check { color: var(--teal); font-weight: 700; font-size: 16px; }
 
+.step-cat {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+}
+.step-row.cat-effort .step-points {
+  color: var(--teal);
+  background: rgba(47, 156, 139, 0.12);
+}
+
+.micro-section { margin-top: 14px; }
+.micro-section-label {
+  font-family: 'Onest', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.micro-card-emoji {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+}
+.micro-card.cat-effort {
+  border-color: rgba(47, 156, 139, 0.25);
+}
+.micro-card.cat-effort .micro-card-points {
+  color: var(--teal);
+}
+
 .micro-block {
   margin-top: 6px;
   background: var(--card);

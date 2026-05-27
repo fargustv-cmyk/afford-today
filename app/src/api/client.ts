@@ -6,6 +6,7 @@ import type {
   MicroPermissionTemplate,
   OgPreview,
   Step,
+  StepCategory,
   UserFreedom,
   Wish
 } from '@afford/shared';
@@ -55,10 +56,15 @@ export const api = {
   listSteps(wishId: string): Promise<{ steps: Step[] }> {
     return request<{ steps: Step[] }>(`/api/wishes/${wishId}/steps`);
   },
-  createStep(wishId: string, title: string, points: number): Promise<{ step: Step }> {
+  createStep(
+    wishId: string,
+    title: string,
+    points: number,
+    category: StepCategory = 'permission'
+  ): Promise<{ step: Step }> {
     return request<{ step: Step }>(`/api/wishes/${wishId}/steps`, {
       method: 'POST',
-      body: JSON.stringify({ title, points })
+      body: JSON.stringify({ title, points, category })
     });
   },
   markStepDone(stepId: string): Promise<{ step: Step; wish: Wish | null }> {

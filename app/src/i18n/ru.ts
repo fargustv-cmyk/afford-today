@@ -74,6 +74,13 @@ export const ru = {
   step_size_medium: 'средний · 25',
   step_size_large: 'крупный · 50',
   step_add_save: 'добавить',
+  step_category_label: 'тип',
+  step_category_permission: '🌿 позволение',
+  step_category_effort: '💪 труд',
+  step_category_permission_hint: 'разреши себе что-то приятное',
+  step_category_effort_hint: 'сделай и заслужи горжусь',
+  wish_lib_permission_title: 'позволения себе',
+  wish_lib_effort_title: 'труд',
 
   // mark-bought + Mozhno screen
   wish_mark_bought: 'я уже купил(а) это',

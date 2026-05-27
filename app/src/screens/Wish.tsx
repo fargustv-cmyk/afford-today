@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { MicroPermissionTemplate, Step, Wish } from '@afford/shared';
+import type { MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
@@ -9,6 +9,8 @@ import { isPreview, previewApi } from '../lib/preview';
 import { tg } from '../telegram';
 
 const a = () => (isPreview() ? previewApi : api);
+
+const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
 interface Props {
   wishId: string;
@@ -151,8 +153,9 @@ export function WishScreen({ wishId, onBack }: Props) {
           {visibleSteps.length > 0 && (
             <ul className="step-list">
               {visibleSteps.map((s) => (
-                <li key={s.id} className={`step-row ${s.done ? 'done' : ''}`}>
+                <li key={s.id} className={`step-row cat-${s.category} ${s.done ? 'done' : ''}`}>
                   <span className="step-points">{s.points}</span>
+                  <span className="step-cat" aria-hidden>{catIcon(s.category)}</span>
                   <span className="step-title">{s.title}</span>
                   {!s.done && (
                     <button
@@ -173,20 +176,33 @@ export function WishScreen({ wishId, onBack }: Props) {
             <div className="micro-block">
               <strong className="micro-title">{ru.wish_steps_empty_title}</strong>
               <p className="micro-body">{ru.wish_steps_empty_body}</p>
-              <ul className="micro-list">
-                {templates.map((t) => (
-                  <li key={t.id}>
-                    <button
-                      className="micro-card"
-                      onClick={() => onTemplateTap(t.id)}
-                      disabled={working === t.id}
-                    >
-                      <span className="micro-card-title">{t.title}</span>
-                      <span className="micro-card-points">+{t.suggestedPoints}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+
+              {(['permission', 'effort'] as StepCategory[]).map((cat) => {
+                const list = templates.filter((t) => t.category === cat);
+                if (list.length === 0) return null;
+                return (
+                  <div key={cat} className="micro-section">
+                    <div className="micro-section-label">
+                      {cat === 'permission' ? ru.wish_lib_permission_title : ru.wish_lib_effort_title}
+                    </div>
+                    <ul className="micro-list">
+                      {list.map((t) => (
+                        <li key={t.id}>
+                          <button
+                            className={`micro-card cat-${t.category}`}
+                            onClick={() => onTemplateTap(t.id)}
+                            disabled={working === t.id}
+                          >
+                            <span className="micro-card-emoji" aria-hidden>{catIcon(t.category)}</span>
+                            <span className="micro-card-title">{t.title}</span>
+                            <span className="micro-card-points">+{t.suggestedPoints}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
@@ -266,15 +282,16 @@ interface AddStepProps {
 function AddStepSheet({ open, onClose, onCreated, wishId }: AddStepProps) {
   const [title, setTitle] = useState('');
   const [points, setPoints] = useState<10 | 25 | 50>(25);
+  const [category, setCategory] = useState<StepCategory>('permission');
   const [saving, setSaving] = useState(false);
 
-  const reset = () => { setTitle(''); setPoints(25); };
+  const reset = () => { setTitle(''); setPoints(25); setCategory('permission'); };
 
   const onSave = async () => {
     if (!title.trim() || saving) return;
     setSaving(true);
     try {
-      const { step } = await a().createStep(wishId, title.trim(), points);
+      const { step } = await a().createStep(wishId, title.trim(), points, category);
       reset();
       onCreated(step);
     } finally {
@@ -285,6 +302,29 @@ function AddStepSheet({ open, onClose, onCreated, wishId }: AddStepProps) {
   return (
     <Sheet open={open} onClose={() => { reset(); onClose(); }} title={ru.step_add_title}>
       <div className="form">
+        <div className="field">
+          <span className="field-label">{ru.step_category_label}</span>
+          <div className="seg">
+            <button
+              type="button"
+              className={`seg-btn ${category === 'permission' ? 'active' : ''}`}
+              onClick={() => setCategory('permission')}
+            >
+              {ru.step_category_permission}
+            </button>
+            <button
+              type="button"
+              className={`seg-btn ${category === 'effort' ? 'active' : ''}`}
+              onClick={() => setCategory('effort')}
+            >
+              {ru.step_category_effort}
+            </button>
+          </div>
+          <div className="field-hint muted">
+            {category === 'permission' ? ru.step_category_permission_hint : ru.step_category_effort_hint}
+          </div>
+        </div>
+
         <label className="field">
           <span className="field-label">{ru.step_add_name_label}</span>
           <input

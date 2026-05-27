@@ -13,6 +13,10 @@ export type LifeDomain =
   | 'other';
 export type WishStatus = 'active' | 'unlocked' | 'purchased' | 'archived';
 export type StepKind = 'step' | 'micro_permission';
+// Psychological flavour of a step. Both flavours fill the same bar at the same
+// rate; the split is just so the user can see "what I allowed myself to do"
+// vs "what I did as effort" separately.
+export type StepCategory = 'permission' | 'effort';
 export type Feeling =
   | 'zero_guilt'
   | 'joy'
@@ -58,6 +62,7 @@ export interface Step {
   wishId: string | null;
   title: string;
   kind: StepKind;
+  category: StepCategory;
   points: number;
   done: boolean;
   doneAt: string | null;
@@ -87,6 +92,7 @@ export interface MicroPermissionTemplate {
   title: string;
   suggestedPoints: number;
   domain: LifeDomain;
+  category: StepCategory;
   isPremium: boolean;
 }
 

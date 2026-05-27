@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Step, StepKind } from '@afford/shared';
+import type { Step, StepCategory, StepKind } from '@afford/shared';
 
 const steps = new Map<string, Step>();
 
@@ -21,7 +21,8 @@ export async function createStep(
   wishId: string,
   title: string,
   points: number,
-  kind: StepKind = 'step'
+  kind: StepKind = 'step',
+  category: StepCategory = 'permission'
 ): Promise<Step> {
   const step: Step = {
     id: randomUUID(),
@@ -29,6 +30,7 @@ export async function createStep(
     wishId,
     title: title.trim(),
     kind,
+    category,
     points,
     done: false,
     doneAt: null,
