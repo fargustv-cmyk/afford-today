@@ -7,8 +7,17 @@ import { isPreview, mockMe } from './lib/preview';
 import { Home } from './screens/Home';
 import { WishScreen } from './screens/Wish';
 import { FreedomScreen } from './screens/Freedom';
+import { Onboarding } from './screens/Onboarding';
 
 type Screen = { kind: 'home' } | { kind: 'wish'; id: string } | { kind: 'freedom' };
+
+const ONBOARDED_KEY = 'afford:onboarded:v1';
+const hasOnboarded = (): boolean => {
+  try { return localStorage.getItem(ONBOARDED_KEY) === '1'; } catch { return false; }
+};
+const markOnboarded = () => {
+  try { localStorage.setItem(ONBOARDED_KEY, '1'); } catch { /* private mode etc — fine */ }
+};
 
 type State =
   | { kind: 'loading' }
@@ -19,6 +28,7 @@ type State =
 export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(!hasOnboarded());
 
   useEffect(() => {
     if (isPreview()) {
@@ -43,6 +53,16 @@ export function App() {
   }, []);
 
   if (state.kind === 'authed') {
+    if (needsOnboarding) {
+      return (
+        <Onboarding
+          onDone={() => {
+            markOnboarded();
+            setNeedsOnboarding(false);
+          }}
+        />
+      );
+    }
     if (screen.kind === 'wish') {
       return <WishScreen wishId={screen.id} onBack={() => setScreen({ kind: 'home' })} />;
     }

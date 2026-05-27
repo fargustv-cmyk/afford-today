@@ -936,3 +936,83 @@ html, body {
   text-transform: uppercase;
 }
 .freedom-tile-badge.thriving { background: var(--coral); }
+
+/* ───────── onboarding (SPEC §10) ───────── */
+
+.onboarding {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 28px 36px;
+  background:
+    radial-gradient(120% 120% at 50% -10%, #FFF8EC 0%, var(--cream-deep) 55%, #EFD3AC 100%);
+  z-index: 50;
+  text-align: center;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 48px;
+}
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(120, 80, 40, 0.2);
+  transition: background 0.2s, transform 0.2s;
+}
+.onboarding-dot.active {
+  background: var(--coral);
+  transform: scale(1.3);
+}
+
+.onboarding-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.onboarding-title {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 9vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  background: linear-gradient(180deg, var(--ink) 0%, #4A3422 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.onboarding-body {
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.onboarding-cta {
+  width: 100%;
+  max-width: 360px;
+  background: var(--coral);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 18px;
+  font-family: 'Onest', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px -14px rgba(224, 83, 58, 0.7);
+  transition: transform 0.1s;
+  margin-top: 24px;
+}
+.onboarding-cta:active:not(:disabled) { transform: scale(0.98); }
+.onboarding-cta:disabled { opacity: 0.5; cursor: not-allowed; }

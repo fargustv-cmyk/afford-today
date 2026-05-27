@@ -113,7 +113,18 @@ export const ru = {
   freedom_thriving_badge: 'цветёт',
   freedom_count_singular: '{n} раз',
   freedom_count_few: '{n} раза',
-  freedom_count_many: '{n} раз'
+  freedom_count_many: '{n} раз',
+
+  // onboarding (SPEC §10, rule-of-90: ends with an immediate "Можно!")
+  onboarding_1_title: 'ты много работаешь.',
+  onboarding_1_body: 'а тратить на себя без вины — почему-то сложно. знакомо?',
+  onboarding_2_title: 'афорд тудей — твоё личное «можно».',
+  onboarding_2_body: 'добавь то, что хочешь. сделай пару шагов. разреши себе.',
+  onboarding_3_title: 'начнём с малого.',
+  onboarding_3_body: 'позволь себе сегодня что-то крошечное. прямо сейчас. бесплатно — потому что ты уже заслужил(а) просто так.',
+  onboarding_next: 'дальше',
+  onboarding_finish: 'разрешаю',
+  onboarding_first_wish_title: 'первое «можно»'
 } as const;
 
 export type RuKey = keyof typeof ru;
