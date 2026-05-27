@@ -19,6 +19,7 @@ export const env = {
   PUBLIC_APP_URL: optional('PUBLIC_APP_URL', 'https://afford-today.onrender.com'),
   CRON_SECRET: optional('CRON_SECRET'),
   OG_TEST_TOKEN: optional('OG_TEST_TOKEN'), // если задан — /api/og?test=<token>&url=… работает без initData
+  TG_WEBHOOK_SECRET: optional('TG_WEBHOOK_SECRET'), // секрет, который Telegram присылает в X-Telegram-Bot-Api-Secret-Token
   NODE_ENV: optional('NODE_ENV', 'development')
 };
 

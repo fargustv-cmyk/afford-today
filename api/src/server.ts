@@ -9,6 +9,7 @@ import { stepsRoutes } from './routes/steps.js';
 import { shareRoutes } from './routes/share.js';
 import { freedomRoutes } from './routes/freedom.js';
 import { cronRoutes } from './routes/cron.js';
+import { telegramRoutes } from './routes/telegram.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +39,8 @@ async function buildApp() {
         if (t && t === env.OG_TEST_TOKEN) return; // bypass auth
       }
     }
+    // /api/telegram/* is open: Telegram authenticates via secret header.
+    if (req.url.startsWith('/api/telegram/')) return;
     if (
       req.url.startsWith('/api/wishes') ||
       req.url.startsWith('/api/steps') ||
@@ -55,6 +58,7 @@ async function buildApp() {
   await app.register(shareRoutes);
   await app.register(freedomRoutes);
   await app.register(cronRoutes);
+  await app.register(telegramRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 
