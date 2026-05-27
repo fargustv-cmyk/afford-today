@@ -36,3 +36,7 @@ export async function upsertUserFromTelegram(tg: TgUser, locale = 'ru'): Promise
 export async function getUser(id: number): Promise<User | null> {
   return users.get(id) ?? null;
 }
+
+export async function listAllUsers(): Promise<User[]> {
+  return Array.from(users.values());
+}

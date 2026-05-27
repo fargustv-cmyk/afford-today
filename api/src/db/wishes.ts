@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import type { CreateWishInput, Wish } from '@afford/shared';
 import { pointsRequiredFor } from '@afford/shared';
 import { createEvent } from './permissionEvents.js';
+import { notifyUnlock } from '../lib/notifications.js';
 
 const wishes = new Map<string, Wish>();
 
@@ -26,6 +27,8 @@ export async function addPointsToWish(wishId: string, points: number): Promise<W
     w.status = 'unlocked';
     w.unlockedAt = new Date().toISOString();
     await createEvent(w.userId, w.id, 0, w.domain, false);
+    // Fire-and-forget bot congrats; never block the API response on it.
+    notifyUnlock(w).catch((err) => console.warn('notifyUnlock failed', err));
   }
   return w;
 }

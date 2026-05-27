@@ -8,6 +8,7 @@ import { wishesRoutes } from './routes/wishes.js';
 import { stepsRoutes } from './routes/steps.js';
 import { shareRoutes } from './routes/share.js';
 import { freedomRoutes } from './routes/freedom.js';
+import { cronRoutes } from './routes/cron.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +44,7 @@ async function buildApp() {
   await app.register(stepsRoutes);
   await app.register(shareRoutes);
   await app.register(freedomRoutes);
+  await app.register(cronRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 

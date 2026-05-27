@@ -16,6 +16,8 @@ export const env = {
   // Resolved relative to api/dist/server.js → ../../app/dist = repo-root/app/dist
   STATIC_DIR: optional('STATIC_DIR', '../../app/dist'),
   DATABASE_URL: optional('DATABASE_URL'),
+  PUBLIC_APP_URL: optional('PUBLIC_APP_URL', 'https://afford-today.onrender.com'),
+  CRON_SECRET: optional('CRON_SECRET'),
   NODE_ENV: optional('NODE_ENV', 'development')
 };
 
