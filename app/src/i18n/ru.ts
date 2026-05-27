@@ -114,11 +114,11 @@ export const ru = {
   feeling_guilt: 'накрыло',
 
   // map / "Список да" (SPEC §8)
-  home_freedom_link_score: 'ты вернул(а) себе на {amount}',
+  home_freedom_link_score: 'потратил(а) на себя без вины: {amount}',
   home_freedom_link_meta: 'за {count} разрешений · {below} без порога',
   freedom_back: '← к желаниям',
   freedom_title: 'карта свободы',
-  freedom_score_label: 'ты вернул(а) себе на',
+  freedom_score_label: 'потратил(а) на себя без вины',
   freedom_meta_count: '{count} разрешений',
   freedom_meta_below: '{n} из них без порога',
   freedom_meta_empty: 'пока ни одного — но это ненадолго',
