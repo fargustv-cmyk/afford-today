@@ -43,6 +43,8 @@ export const ru = {
   add_save: 'добавить в вишлист',
   add_cancel: 'отмена',
   add_essential_chip: 'это базовое — сразу разрешено',
+  add_interp_label: 'как получишь?',
+  add_interp_hint: 'влияет на дефолт «+ шага» и порядок библиотеки внутри. в любой момент можно менять.',
 
   // domains
   domain_clothes: 'одежда',

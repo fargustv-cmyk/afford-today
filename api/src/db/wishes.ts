@@ -88,6 +88,7 @@ export async function createWish(userId: number, input: CreateWishInput): Promis
     currency: input.currency ?? 'RUB',
     type: input.type,
     domain: input.domain,
+    interpretation: input.interpretation ?? 'both',
     pointsRequired,
     pointsEarned: 0,
     status,

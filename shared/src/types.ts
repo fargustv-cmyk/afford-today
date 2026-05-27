@@ -57,6 +57,7 @@ export interface Wish {
   currency: string;
   type: WishType;
   domain: LifeDomain;
+  interpretation: InterpretationMode; // how the user plans to earn it
   pointsRequired: number;
   pointsEarned: number;
   status: WishStatus;
@@ -118,6 +119,7 @@ export interface CreateWishInput {
   imageUrl?: string | null;
   type: WishType;
   domain: LifeDomain;
+  interpretation?: InterpretationMode;
   currency?: string;
 }
 

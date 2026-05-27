@@ -63,13 +63,10 @@ export function App() {
         />
       );
     }
-    const updateMe = (next: MeResponse) =>
-      setState((s) => (s.kind === 'authed' ? { kind: 'authed', me: next } : s));
     if (screen.kind === 'wish') {
       return (
         <WishScreen
           wishId={screen.id}
-          me={state.me}
           onBack={() => setScreen({ kind: 'home' })}
         />
       );
@@ -79,8 +76,6 @@ export function App() {
     }
     return (
       <Home
-        me={state.me}
-        onMeUpdate={updateMe}
         onOpenWish={(id) => setScreen({ kind: 'wish', id })}
         onOpenFreedom={() => setScreen({ kind: 'freedom' })}
       />

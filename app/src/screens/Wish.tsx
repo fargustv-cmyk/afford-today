@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { InterpretationMode, MeResponse, MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
+import type { InterpretationMode, MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
@@ -14,17 +14,10 @@ const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
 interface Props {
   wishId: string;
-  me: MeResponse;
   onBack: () => void;
 }
 
-export function WishScreen({ wishId, me, onBack }: Props) {
-  const interpretation =
-    (me.user.settings.interpretation as InterpretationMode | undefined) ?? 'both';
-  const defaultStepCategory: StepCategory =
-    interpretation === 'effort' ? 'effort' : 'permission';
-  const sectionOrder: StepCategory[] =
-    interpretation === 'effort' ? ['effort', 'permission'] : ['permission', 'effort'];
+export function WishScreen({ wishId, onBack }: Props) {
   const [wish, setWish] = useState<Wish | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
@@ -57,6 +50,12 @@ export function WishScreen({ wishId, me, onBack }: Props) {
   const pct = wish.pointsRequired > 0
     ? Math.min(100, (wish.pointsEarned / wish.pointsRequired) * 100)
     : 100;
+  // Per-wish lens — set at creation. Falls back to 'both' for old wishes.
+  const interpretation: InterpretationMode = wish.interpretation ?? 'both';
+  const defaultStepCategory: StepCategory =
+    interpretation === 'effort' ? 'effort' : 'permission';
+  const sectionOrder: StepCategory[] =
+    interpretation === 'effort' ? ['effort', 'permission'] : ['permission', 'effort'];
 
   const refreshWish = (updated: Wish | null) => {
     if (!updated) return;

@@ -3,6 +3,7 @@ import type {
   CheckIn,
   CreateWishInput,
   Feeling,
+  InterpretationMode,
   LifeDomain,
   OgPreview,
   Wish,
@@ -15,6 +16,7 @@ import { createCheckIn } from '../db/checkIns.js';
 const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
 const VALID_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
 const VALID_FEELINGS: Feeling[] = ['zero_guilt', 'joy', 'scared_but_good', 'empty', 'guilt'];
+const VALID_INTERPRETATIONS: InterpretationMode[] = ['permission', 'effort', 'both'];
 
 interface OgQuery {
   url: string;
@@ -45,6 +47,10 @@ export async function wishesRoutes(app: FastifyInstance) {
         return { error: 'invalid domain' };
       }
       const price = typeof body.price === 'number' && body.price > 0 ? body.price : null;
+      const interpretation: InterpretationMode =
+        body.interpretation && VALID_INTERPRETATIONS.includes(body.interpretation)
+          ? body.interpretation
+          : 'both';
       const wish = await createWish(userId, {
         title: body.title,
         price,
@@ -52,6 +58,7 @@ export async function wishesRoutes(app: FastifyInstance) {
         imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl : null,
         type: body.type,
         domain: body.domain,
+        interpretation,
         currency: body.currency || 'RUB'
       });
       return { wish };

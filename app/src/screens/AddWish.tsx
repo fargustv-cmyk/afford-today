@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import type { CreateWishInput, LifeDomain, WishType } from '@afford/shared';
+import type { CreateWishInput, InterpretationMode, LifeDomain, WishType } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { api } from '../api/client';
@@ -29,6 +29,7 @@ export function AddWishSheet({ open, onClose, onCreated }: Props) {
   const [price, setPrice] = useState('');
   const [type, setType] = useState<WishType>('want');
   const [domain, setDomain] = useState<LifeDomain>('joy');
+  const [interpretation, setInterpretation] = useState<InterpretationMode>('both');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [ogStatus, setOgStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
   const [saving, setSaving] = useState(false);
@@ -36,8 +37,8 @@ export function AddWishSheet({ open, onClose, onCreated }: Props) {
 
   const reset = () => {
     setUrl(''); setTitle(''); setPrice('');
-    setType('want'); setDomain('joy'); setImageUrl(null);
-    setOgStatus('idle');
+    setType('want'); setDomain('joy'); setInterpretation('both');
+    setImageUrl(null); setOgStatus('idle');
   };
 
   const onUrlBlur = async () => {
@@ -66,7 +67,8 @@ export function AddWishSheet({ open, onClose, onCreated }: Props) {
       sourceUrl: url.trim() || null,
       imageUrl,
       type,
-      domain
+      domain,
+      interpretation
     };
     try {
       await a().createWish(input);
@@ -169,6 +171,36 @@ export function AddWishSheet({ open, onClose, onCreated }: Props) {
             ))}
           </div>
         </div>
+
+        {!isEssential && (
+          <div className="field">
+            <span className="field-label">{ru.add_interp_label}</span>
+            <div className="chips">
+              <button
+                type="button"
+                className={`chip ${interpretation === 'permission' ? 'active' : ''}`}
+                onClick={() => setInterpretation('permission')}
+              >
+                {ru.settings_interp_permission}
+              </button>
+              <button
+                type="button"
+                className={`chip ${interpretation === 'effort' ? 'active' : ''}`}
+                onClick={() => setInterpretation('effort')}
+              >
+                {ru.settings_interp_effort}
+              </button>
+              <button
+                type="button"
+                className={`chip ${interpretation === 'both' ? 'active' : ''}`}
+                onClick={() => setInterpretation('both')}
+              >
+                {ru.settings_interp_both}
+              </button>
+            </div>
+            <div className="field-hint muted">{ru.add_interp_hint}</div>
+          </div>
+        )}
 
         <button
           type="button"
