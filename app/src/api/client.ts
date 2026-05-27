@@ -76,12 +76,6 @@ export const api = {
   microTemplates(): Promise<{ templates: MicroPermissionTemplate[] }> {
     return request<{ templates: MicroPermissionTemplate[] }>('/api/micro-permissions');
   },
-  doMicroPermission(wishId: string, templateId: string): Promise<{ step: Step; wish: Wish | null }> {
-    return request<{ step: Step; wish: Wish | null }>(
-      `/api/wishes/${wishId}/micro-permissions/${templateId}/done`,
-      { method: 'POST' }
-    );
-  },
   markBought(wishId: string): Promise<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }> {
     return request<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }>(
       `/api/wishes/${wishId}/mark-bought`,

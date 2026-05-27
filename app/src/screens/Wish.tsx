@@ -82,11 +82,14 @@ export function WishScreen({ wishId, me, onBack }: Props) {
 
   const onTemplateTap = async (templateId: string) => {
     if (working) return;
+    const tpl = templates.find((t) => t.id === templateId);
+    if (!tpl) return;
     setWorking(templateId);
     try {
-      const { step, wish: w } = await a().doMicroPermission(wishId, templateId);
-      setSteps((prev) => [step, ...prev]);
-      refreshWish(w);
+      // Suggestions are PENDING by design — points accrue only when the
+      // user actually does it and taps «выполнил».
+      const { step } = await a().createStep(wishId, tpl.title, tpl.suggestedPoints, tpl.category);
+      setSteps((prev) => [...prev, step]);
     } finally {
       setWorking(null);
     }
