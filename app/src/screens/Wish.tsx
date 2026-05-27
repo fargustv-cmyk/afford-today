@@ -22,6 +22,7 @@ export function WishScreen({ wishId, onBack }: Props) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
   const [addOpen, setAddOpen] = useState(false);
+  const [libOpen, setLibOpen] = useState(false);
   const [working, setWorking] = useState<string | null>(null);
   const [mozhno, setMozhno] = useState<null | { belowThreshold: boolean; closeToHome: boolean }>(null);
   const [checkInOpen, setCheckInOpen] = useState(false);
@@ -89,6 +90,7 @@ export function WishScreen({ wishId, onBack }: Props) {
       // user actually does it and taps «выполнил».
       const { step } = await a().createStep(wishId, tpl.title, tpl.suggestedPoints, tpl.category);
       setSteps((prev) => [...prev, step]);
+      setLibOpen(false);
     } finally {
       setWorking(null);
     }
@@ -112,7 +114,9 @@ export function WishScreen({ wishId, onBack }: Props) {
   };
 
   const visibleSteps = steps;
-  const showTemplates = !isEssential && !isUnlocked && steps.filter((s) => !s.done).length === 0;
+  // First-time helper: render the library inline when the wish has no steps at all.
+  // After that the user gets to it via the «идеи» button (libOpen sheet).
+  const showInlineTemplates = !isEssential && !isUnlocked && steps.length === 0;
 
   return (
     <main className="shell shell-home">
@@ -155,7 +159,10 @@ export function WishScreen({ wishId, onBack }: Props) {
           <div className="wish-steps-head">
             <h2 className="section-title">{ru.wish_steps_title}</h2>
             {!isUnlocked && (
-              <button className="add-btn" onClick={() => setAddOpen(true)}>{ru.wish_add_step}</button>
+              <div className="wish-steps-actions">
+                <button className="add-btn add-btn-ghost" onClick={() => setLibOpen(true)}>{ru.wish_lib_btn}</button>
+                <button className="add-btn" onClick={() => setAddOpen(true)}>{ru.wish_add_step}</button>
+              </div>
             )}
           </div>
 
@@ -181,7 +188,7 @@ export function WishScreen({ wishId, onBack }: Props) {
             </ul>
           )}
 
-          {showTemplates && (
+          {showInlineTemplates && (
             <div className="micro-block">
               <strong className="micro-title">{ru.wish_steps_empty_title}</strong>
               <p className="micro-body">{ru.wish_steps_empty_body}</p>
@@ -238,6 +245,36 @@ export function WishScreen({ wishId, onBack }: Props) {
         wishId={wishId}
         defaultCategory={defaultStepCategory}
       />
+
+      <Sheet open={libOpen} onClose={() => setLibOpen(false)} title={ru.wish_lib_sheet_title}>
+        <p className="muted micro-body">{ru.wish_lib_sheet_hint}</p>
+        {sectionOrder.map((cat) => {
+          const list = templates.filter((t) => t.category === cat);
+          if (list.length === 0) return null;
+          return (
+            <div key={cat} className="micro-section">
+              <div className="micro-section-label">
+                {cat === 'permission' ? ru.wish_lib_permission_title : ru.wish_lib_effort_title}
+              </div>
+              <ul className="micro-list">
+                {list.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      className={`micro-card cat-${t.category}`}
+                      onClick={() => onTemplateTap(t.id)}
+                      disabled={working === t.id}
+                    >
+                      <span className="micro-card-emoji" aria-hidden>{catIcon(t.category)}</span>
+                      <span className="micro-card-title">{t.title}</span>
+                      <span className="micro-card-points">+{t.suggestedPoints}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </Sheet>
 
       {mozhno && (
         <Mozhno

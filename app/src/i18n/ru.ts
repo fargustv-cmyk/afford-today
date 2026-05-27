@@ -15,6 +15,9 @@ export const ru = {
   home_empty_title: 'чего ты хочешь?',
   home_empty_body: 'не «что полезно», а что *хочется*. одна штука — для начала.',
   home_empty_cta: '+ добавить первое желание',
+  home_done_title: 'что дальше?',
+  home_done_body: 'прошлое «можно» уже твоё. придумай следующее — когда захочется.',
+  home_done_cta: '+ хочу ещё',
 
   // wish card
   wish_progress: '{earned} из {required} очков',
@@ -83,6 +86,9 @@ export const ru = {
   step_category_effort_hint: 'сделай и заслужи горжусь',
   wish_lib_permission_title: 'позволения себе',
   wish_lib_effort_title: 'труд',
+  wish_lib_btn: 'идеи',
+  wish_lib_sheet_title: 'идеи на шаги',
+  wish_lib_sheet_hint: 'тап = добавил в список. не подходит — закрой и пиши свой шаг.',
 
   // mark-bought + Mozhno screen
   wish_mark_bought: 'я уже купил(а) это',

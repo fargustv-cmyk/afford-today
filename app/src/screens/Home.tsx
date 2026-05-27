@@ -67,14 +67,25 @@ export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
       )}
 
       {empty ? (
-        <section className="empty-state">
-          <div className="empty-mark" aria-hidden>✦</div>
-          <h2 className="empty-title">{ru.home_empty_title}</h2>
-          <p className="empty-body">{ru.home_empty_body}</p>
-          <button className="cta-btn" onClick={() => setAddOpen(true)}>
-            {ru.home_empty_cta}
-          </button>
-        </section>
+        (freedom && freedom.totalPermissions > 0) ? (
+          <section className="empty-state">
+            <div className="empty-mark" aria-hidden>✦</div>
+            <h2 className="empty-title">{ru.home_done_title}</h2>
+            <p className="empty-body">{ru.home_done_body}</p>
+            <button className="cta-btn" onClick={() => setAddOpen(true)}>
+              {ru.home_done_cta}
+            </button>
+          </section>
+        ) : (
+          <section className="empty-state">
+            <div className="empty-mark" aria-hidden>✦</div>
+            <h2 className="empty-title">{ru.home_empty_title}</h2>
+            <p className="empty-body">{ru.home_empty_body}</p>
+            <button className="cta-btn" onClick={() => setAddOpen(true)}>
+              {ru.home_empty_cta}
+            </button>
+          </section>
+        )
       ) : (
         <section className="wish-list">
           {wishes.map((w) => (
