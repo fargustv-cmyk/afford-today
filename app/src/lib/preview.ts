@@ -1,4 +1,4 @@
-import type { MeResponse, MicroPermissionTemplate, Step, User, Wish } from '@afford/shared';
+import type { CheckIn, Feeling, MeResponse, MicroPermissionTemplate, Step, User, Wish } from '@afford/shared';
 
 export const isPreview = (): boolean =>
   new URLSearchParams(window.location.search).get('preview') === '1';
@@ -164,5 +164,15 @@ export const previewApi = {
     // open a placeholder so the share button does *something* visible.
     const url = `${window.location.origin}/share/preview-${wishId}.png`;
     return { imageUrl: url, shareUrl: url };
+  },
+  checkIn: async (wishId: string, feeling: Feeling, note: string) => {
+    const ci: CheckIn = {
+      id: `ci-${Date.now()}`,
+      wishId,
+      feeling,
+      note: note.trim() || null,
+      createdAt: new Date().toISOString()
+    };
+    return { checkIn: ci };
   }
 };

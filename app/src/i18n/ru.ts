@@ -83,7 +83,20 @@ export const ru = {
   mozhno_sub_normal: 'Ты дошёл(ла) до конца. Официально — можно. Иди забирай.',
   mozhno_sub_below: 'Ты позволил(а) себе это без всякого гринда. Вот это и есть рост 🤍',
   mozhno_share: 'Поделиться',
-  mozhno_continue: 'Готово'
+  mozhno_continue: 'Готово',
+
+  // post-purchase check-in (SPEC §7) — neutral, never judgmental
+  checkin_title: 'как ощущается?',
+  checkin_sub: 'любой ответ ок. это только для тебя — никуда не уйдёт.',
+  checkin_save: 'сохранить',
+  checkin_skip: 'пропустить',
+  checkin_note_label: 'хочешь добавить?',
+  checkin_note_placeholder: 'пару слов для себя — приватно',
+  feeling_zero_guilt: 'ноль вины',
+  feeling_joy: 'кайф',
+  feeling_scared_but_good: 'страшно, но кайф',
+  feeling_empty: 'пусто',
+  feeling_guilt: 'накрыло'
 } as const;
 
 export type RuKey = keyof typeof ru;

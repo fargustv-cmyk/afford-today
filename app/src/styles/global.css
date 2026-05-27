@@ -744,3 +744,66 @@ html, body {
   .mozhno-seal { animation: none; opacity: 1; }
   .mozhno-seal-ring { animation: none; }
 }
+
+/* ───────── check-in (post-purchase) ───────── */
+
+.checkin-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  margin: 4px 0 14px;
+}
+.feeling-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.feeling-btn {
+  background: var(--card);
+  border: 1px solid rgba(120, 80, 40, 0.14);
+  border-radius: 14px;
+  padding: 12px 4px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Onest', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.feeling-btn:active { transform: scale(0.96); }
+.feeling-btn.active {
+  border-color: var(--coral);
+  background: rgba(224, 83, 58, 0.06);
+}
+.feeling-emoji { font-size: 26px; line-height: 1; }
+.feeling-label {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+  line-height: 1.2;
+}
+.feeling-btn.active .feeling-label { color: var(--ink); }
+
+.field-input.area {
+  resize: vertical;
+  min-height: 64px;
+  font-family: 'Onest', sans-serif;
+  line-height: 1.4;
+}
+
+.btn-ghost-link {
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  font-family: 'Onest', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px;
+  margin-top: 4px;
+}
+.btn-ghost-link:hover { color: var(--ink); }

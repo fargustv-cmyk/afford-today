@@ -1,10 +1,20 @@
 import type { FastifyInstance } from 'fastify';
-import type { CreateWishInput, OgPreview, Wish, WishType, LifeDomain } from '@afford/shared';
-import { listActiveWishes, createWish, markWishPurchased } from '../db/wishes.js';
+import type {
+  CheckIn,
+  CreateWishInput,
+  Feeling,
+  LifeDomain,
+  OgPreview,
+  Wish,
+  WishType
+} from '@afford/shared';
+import { listActiveWishes, createWish, markWishPurchased, getWishById } from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
+import { createCheckIn } from '../db/checkIns.js';
 
 const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
 const VALID_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
+const VALID_FEELINGS: Feeling[] = ['zero_guilt', 'joy', 'scared_but_good', 'empty', 'guilt'];
 
 interface OgQuery {
   url: string;
@@ -60,6 +70,32 @@ export async function wishesRoutes(app: FastifyInstance) {
       return { error: 'wish not found' };
     }
     return { wish: result.wish, belowThreshold: result.belowThreshold, justPurchased: result.justPurchased };
+  });
+
+  // Check-in after purchase (SPEC §7). One reaction tap + optional note.
+  // Note is PRIVATE — never shared, never used for marketing.
+  app.post<{
+    Params: { id: string };
+    Body: { feeling?: Feeling; note?: string };
+    Reply: { checkIn: CheckIn } | { error: string };
+  }>('/api/wishes/:id/check-in', async (req, reply) => {
+    const userId = req.tgUser!.id;
+    const wish = await getWishById(req.params.id);
+    if (!wish || wish.userId !== userId) {
+      reply.code(404);
+      return { error: 'wish not found' };
+    }
+    if (!wish.purchasedAt) {
+      reply.code(400);
+      return { error: 'wish must be purchased first' };
+    }
+    const { feeling, note } = req.body ?? {};
+    if (!feeling || !VALID_FEELINGS.includes(feeling)) {
+      reply.code(400);
+      return { error: 'invalid feeling' };
+    }
+    const checkIn = await createCheckIn(wish.id, feeling, note ?? null);
+    return { checkIn };
   });
 
   // OG preview — auth-gated so randos can't pivot through it as an open proxy.

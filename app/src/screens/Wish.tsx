@@ -3,6 +3,7 @@ import type { MicroPermissionTemplate, Step, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
+import { CheckInSheet } from '../components/CheckIn';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 import { tg } from '../telegram';
@@ -21,6 +22,7 @@ export function WishScreen({ wishId, onBack }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [working, setWorking] = useState<string | null>(null);
   const [mozhno, setMozhno] = useState<null | { belowThreshold: boolean; closeToHome: boolean }>(null);
+  const [checkInOpen, setCheckInOpen] = useState(false);
 
   useEffect(() => {
     // Find the wish in the list — we don't have a single-wish endpoint yet
@@ -234,7 +236,19 @@ export function WishScreen({ wishId, onBack }: Props) {
           onContinue={() => {
             const close = mozhno.closeToHome;
             setMozhno(null);
-            if (close) onBack();
+            // If the user just marked it bought, go straight into the check-in
+            // sheet (SPEC §7); otherwise stay on the wish.
+            if (close) setCheckInOpen(true);
+          }}
+        />
+      )}
+
+      {checkInOpen && (
+        <CheckInSheet
+          wishId={wishId}
+          onDone={() => {
+            setCheckInOpen(false);
+            onBack();
           }}
         />
       )}

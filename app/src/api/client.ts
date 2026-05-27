@@ -1,5 +1,7 @@
 import type {
+  CheckIn,
   CreateWishInput,
+  Feeling,
   MeResponse,
   MicroPermissionTemplate,
   OgPreview,
@@ -83,5 +85,11 @@ export const api = {
       `/api/wishes/${wishId}/share`,
       { method: 'POST' }
     );
+  },
+  checkIn(wishId: string, feeling: Feeling, note: string): Promise<{ checkIn: CheckIn }> {
+    return request<{ checkIn: CheckIn }>(`/api/wishes/${wishId}/check-in`, {
+      method: 'POST',
+      body: JSON.stringify({ feeling, note: note || undefined })
+    });
   }
 };
