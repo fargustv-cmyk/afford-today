@@ -44,7 +44,14 @@ export function Onboarding({ onDone }: Props) {
       // Essentials unlock immediately; mark bought right away so we get a
       // proper permission_event and the freedom map starts at 1.
       const bought = await a().markBought(wish.id);
-      setFirstWish(bought.wish ?? wish);
+      // Only celebrate if the server actually moved the wish to 'purchased'.
+      // If markBought returned null (race / 404), skip Mozhno and let the
+      // user finish onboarding — they can claim the wish from the list.
+      if (bought.wish?.status === 'purchased') {
+        setFirstWish(bought.wish);
+      } else {
+        onDone();
+      }
     } catch {
       // Soft fail: never block onboarding — just finish without the wish.
       onDone();

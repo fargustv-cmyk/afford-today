@@ -224,7 +224,21 @@ export function WishScreen({ wishId, onBack }: Props) {
         </section>
       )}
 
-      {wish.status !== 'purchased' && (
+      {wish.status === 'unlocked' && (
+        <div className="claim-wrap">
+          <button
+            type="button"
+            className="claim-btn"
+            onClick={onMarkBought}
+            disabled={working === 'buy'}
+          >
+            {working === 'buy' ? '…' : ru.wish_claim_btn}
+          </button>
+          <div className="claim-hint">{ru.wish_claim_hint}</div>
+        </div>
+      )}
+
+      {wish.status === 'active' && (
         <div className="mark-bought-wrap">
           <button
             type="button"

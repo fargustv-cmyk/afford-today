@@ -93,7 +93,9 @@ export const ru = {
 
   // mark-bought + Mozhno screen
   wish_mark_bought: 'я уже купил(а) это',
-  wish_mark_bought_hint: 'покупку никогда не блокируем — кнопка всегда твоя',
+  wish_mark_bought_hint: 'если взял(а) заранее — кнопка всё равно твоя',
+  wish_claim_btn: 'забрать — оно твоё',
+  wish_claim_hint: 'отметит как полученное и оставит след на карте свободы',
   mozhno_pill_below: 'без гринда · горжусь',
   mozhno_title: 'Можно!',
   mozhno_sub_normal: 'Ты дошёл(ла) до конца. Официально — можно. Иди забирай.',
