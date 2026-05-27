@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF8EC"/>
+      <stop offset="1" stop-color="#EFD3AC"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(450 145)">
+    <rect width="300" height="300" rx="56" ry="56" fill="#E0533A"/>
+    <polygon
+      points="150,52 174,126 248,150 174,174 150,248 126,174 52,150 126,126"
+      fill="#FBF3E7"/>
+  </g>
+  <text x="600" y="520" text-anchor="middle"
+    font-family="Unbounded, Inter, sans-serif"
+    font-weight="800" font-size="64" fill="#2B2017" letter-spacing="-1">afford.today</text>
+  <text x="600" y="575" text-anchor="middle"
+    font-family="Onest, Inter, sans-serif"
+    font-weight="500" font-size="26" fill="#7A6450">твоё личное «можно»</text>
+</svg>
