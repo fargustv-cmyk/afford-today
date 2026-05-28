@@ -41,10 +41,21 @@ export interface User {
   firstName?: string;
 }
 
+export type ThemeId = 'default' | 'night' | 'forest' | 'paper';
+
 export interface UserSettings {
   interpretation?: InterpretationMode;
   notificationsEnabled?: boolean;
+  theme?: ThemeId;
   [key: string]: unknown;
+}
+
+export interface MicroPermissionPack {
+  id: string;
+  title: string;
+  description: string;
+  isPremium: boolean;
+  count: number;
 }
 
 export interface Wish {
@@ -104,6 +115,7 @@ export interface MicroPermissionTemplate {
   domain: LifeDomain;
   category: StepCategory;
   isPremium: boolean;
+  pack?: string; // 'default' (free) or a named premium pack
 }
 
 // API response shapes
@@ -143,6 +155,22 @@ export interface UserFreedom {
   selfPermissionRatio: number;   // 0..1
   byDomain: Record<LifeDomain, DomainAgg>;
   events: EnrichedEvent[];       // newest first, all domains
+}
+
+// Pro-only: weekly/monthly trends derived from PermissionEvent.
+export interface FreedomBucket {
+  startsAt: string; // ISO date for the start of week / month
+  count: number;
+  value: number;
+  selfPermissions: number; // count where belowThreshold = true
+}
+export interface FreedomPro {
+  weeks: FreedomBucket[]; // last 12 weeks, oldest first
+  months: FreedomBucket[]; // last 12 months, oldest first
+  // Permission vs effort split — pulled from steps, not events; both columns
+  // count fully unlocked wishes only (so it's a real "how I get there" mirror).
+  permissionStepsDone: number;
+  effortStepsDone: number;
 }
 
 // PermissionEvent joined with its wish's display fields, so the client

@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import type { InterpretationMode, MicroPermissionTemplate, Step, StepCategory, Wish } from '@afford/shared';
+import type {
+  InterpretationMode,
+  MeResponse,
+  MicroPermissionPack,
+  MicroPermissionTemplate,
+  Step,
+  StepCategory,
+  Wish
+} from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { Mozhno } from '../components/Mozhno';
 import { CheckInSheet } from '../components/CheckIn';
+import { PaywallSheet } from '../components/Paywall';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 import { tg } from '../telegram';
@@ -13,16 +22,20 @@ const a = () => (isPreview() ? previewApi : api);
 const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
 interface Props {
+  me: MeResponse;
   wishId: string;
   onBack: () => void;
 }
 
-export function WishScreen({ wishId, onBack }: Props) {
+export function WishScreen({ me, wishId, onBack }: Props) {
   const [wish, setWish] = useState<Wish | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
+  const [packs, setPacks] = useState<MicroPermissionPack[]>([]);
+  const [activePack, setActivePack] = useState<string>('default');
   const [addOpen, setAddOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<string | null>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [mozhno, setMozhno] = useState<null | { belowThreshold: boolean; closeToHome: boolean }>(null);
   const [checkInOpen, setCheckInOpen] = useState(false);
@@ -34,8 +47,21 @@ export function WishScreen({ wishId, onBack }: Props) {
       setWish(w ?? null);
     });
     a().listSteps(wishId).then(({ steps }) => setSteps(steps));
-    a().microTemplates().then(({ templates }) => setTemplates(templates));
+    a().microTemplates('default').then(({ templates }) => setTemplates(templates));
+    a().listPacks().then(({ packs }) => setPacks(packs)).catch(() => setPacks([]));
   }, [wishId]);
+
+  const switchPack = async (packId: string) => {
+    const pack = packs.find((p) => p.id === packId);
+    if (!pack) return;
+    if (pack.isPremium && !me.unlocked) {
+      setPaywallReason(ru.paywall_reason_pack);
+      return;
+    }
+    setActivePack(packId);
+    const { templates } = await a().microTemplates(packId);
+    setTemplates(templates);
+  };
 
   if (!wish) {
     return (
@@ -262,6 +288,24 @@ export function WishScreen({ wishId, onBack }: Props) {
 
       <Sheet open={libOpen} onClose={() => setLibOpen(false)} title={ru.wish_lib_sheet_title}>
         <p className="muted micro-body">{ru.wish_lib_sheet_hint}</p>
+        {packs.length > 1 && (
+          <div className="pack-picker">
+            <div className="pack-picker-label muted">{ru.packs_picker_label}</div>
+            <div className="pack-chips">
+              {packs.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`pack-chip ${activePack === p.id ? 'active' : ''} ${p.isPremium ? 'is-pro' : ''}`}
+                  onClick={() => switchPack(p.id)}
+                >
+                  {p.title}
+                  {p.isPremium && <span className="pro-pill">PRO</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {sectionOrder.map((cat) => {
           const list = templates.filter((t) => t.category === cat);
           if (list.length === 0) return null;
@@ -329,6 +373,12 @@ export function WishScreen({ wishId, onBack }: Props) {
           }}
         />
       )}
+
+      <PaywallSheet
+        open={paywallReason !== null}
+        reason={paywallReason ?? undefined}
+        onClose={() => setPaywallReason(null)}
+      />
     </main>
   );
 }

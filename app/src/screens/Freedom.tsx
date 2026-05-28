@@ -4,9 +4,10 @@
 // to drill into the things you allowed yourself in that area.
 
 import { useEffect, useState } from 'react';
-import type { EnrichedEvent, LifeDomain, UserFreedom } from '@afford/shared';
+import type { EnrichedEvent, FreedomPro, LifeDomain, MeResponse, UserFreedom } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
+import { PaywallSheet } from '../components/Paywall';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 
@@ -48,16 +49,22 @@ function formatDateShort(ts: string, lang = 'ru'): string {
 }
 
 interface Props {
+  me: MeResponse;
   onBack: () => void;
 }
 
-export function FreedomScreen({ onBack }: Props) {
+export function FreedomScreen({ me, onBack }: Props) {
   const [data, setData] = useState<UserFreedom | null>(null);
   const [openDomain, setOpenDomain] = useState<DomainMeta | null>(null);
+  const [pro, setPro] = useState<FreedomPro | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   useEffect(() => {
     a().freedom().then(setData).catch(() => setData(null));
-  }, []);
+    if (me.unlocked) {
+      a().freedomPro().then(setPro).catch(() => setPro(null));
+    }
+  }, [me.unlocked]);
 
   if (!data) {
     return (
@@ -143,6 +150,14 @@ export function FreedomScreen({ onBack }: Props) {
         </section>
       )}
 
+      {!empty && (
+        me.unlocked && pro ? (
+          <ProSection pro={pro} />
+        ) : !empty && !me.unlocked ? (
+          <ProLockedTeaser onUnlock={() => setPaywallOpen(true)} />
+        ) : null
+      )}
+
       {openDomain && (
         <DomainSheet
           domain={openDomain}
@@ -150,7 +165,70 @@ export function FreedomScreen({ onBack }: Props) {
           onClose={() => setOpenDomain(null)}
         />
       )}
+
+      <PaywallSheet
+        open={paywallOpen}
+        reason={ru.paywall_reason_freedom}
+        onClose={() => setPaywallOpen(false)}
+      />
     </main>
+  );
+}
+
+function ProSection({ pro }: { pro: FreedomPro }) {
+  const max = Math.max(1, ...pro.weeks.map((w) => w.value));
+  return (
+    <section className="freedom-pro">
+      <h2 className="section-title">тренд по неделям</h2>
+      <div className="freedom-chart">
+        {pro.weeks.length === 0 && <div className="muted">пока пусто — но это ненадолго</div>}
+        {pro.weeks.map((w) => {
+          const h = Math.round((w.value / max) * 80);
+          const d = new Date(w.startsAt);
+          return (
+            <div key={w.startsAt} className="freedom-bar-col" title={`${w.count} разрешений · ${w.value.toLocaleString('ru-RU')}`}>
+              <div className="freedom-bar" style={{ height: `${h}px` }} />
+              <div className="freedom-bar-label">
+                {d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <h2 className="section-title">позволение и труд</h2>
+      <div className="split-bar">
+        <div
+          className="split-bar-permission"
+          style={{
+            flexGrow: pro.permissionStepsDone || 1,
+            opacity: pro.permissionStepsDone ? 1 : 0.3
+          }}
+        >
+          🌿 {pro.permissionStepsDone}
+        </div>
+        <div
+          className="split-bar-effort"
+          style={{
+            flexGrow: pro.effortStepsDone || 1,
+            opacity: pro.effortStepsDone ? 1 : 0.3
+          }}
+        >
+          💪 {pro.effortStepsDone}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProLockedTeaser({ onUnlock }: { onUnlock: () => void }) {
+  return (
+    <section className="freedom-pro-locked">
+      <div className="pro-pill">{ru.paywall_locked_pill}</div>
+      <h2 className="locked-title">{ru.paywall_locked_freedom_title}</h2>
+      <p className="muted">{ru.paywall_locked_freedom_body}</p>
+      <button type="button" className="claim-btn" onClick={onUnlock}>{ru.paywall_unlock_btn}</button>
+    </section>
   );
 }
 

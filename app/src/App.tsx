@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { MeResponse } from '@afford/shared';
+import type { MeResponse, ThemeId } from '@afford/shared';
+
+function applyTheme(theme: ThemeId) {
+  if (theme === 'default') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', theme);
+}
+export { applyTheme };
 import { tg } from './telegram';
 import { ru } from './i18n/ru';
 import { api } from './api/client';
@@ -33,6 +39,7 @@ export function App() {
   useEffect(() => {
     if (isPreview()) {
       setState({ kind: 'authed', me: mockMe });
+      applyTheme(mockMe.user.settings?.theme ?? 'default');
       return;
     }
     if (!tg) {
@@ -44,7 +51,10 @@ export function App() {
 
     api
       .me()
-      .then((me) => setState({ kind: 'authed', me }))
+      .then((me) => {
+        applyTheme(me.user.settings?.theme ?? 'default');
+        setState({ kind: 'authed', me });
+      })
       .catch((err: unknown) => {
         const e = err as { status?: number } | undefined;
         if (e?.status === 401) setState({ kind: 'unauthorized' });
@@ -66,16 +76,19 @@ export function App() {
     if (screen.kind === 'wish') {
       return (
         <WishScreen
+          me={state.me}
           wishId={screen.id}
           onBack={() => setScreen({ kind: 'home' })}
         />
       );
     }
     if (screen.kind === 'freedom') {
-      return <FreedomScreen onBack={() => setScreen({ kind: 'home' })} />;
+      return <FreedomScreen me={state.me} onBack={() => setScreen({ kind: 'home' })} />;
     }
     return (
       <Home
+        me={state.me}
+        onUpdateMe={(me) => setState({ kind: 'authed', me })}
         onOpenWish={(id) => setScreen({ kind: 'wish', id })}
         onOpenFreedom={() => setScreen({ kind: 'freedom' })}
       />

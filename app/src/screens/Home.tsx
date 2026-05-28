@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { UserFreedom, Wish } from '@afford/shared';
+import type { MeResponse, UserFreedom, Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { WishCard } from '../components/WishCard';
+import { SettingsSheet } from '../components/Settings';
+import { PaywallSheet } from '../components/Paywall';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 import { AddWishSheet } from './AddWish';
@@ -9,14 +11,18 @@ import { AddWishSheet } from './AddWish';
 const a = () => (isPreview() ? previewApi : api);
 
 interface HomeProps {
+  me: MeResponse;
+  onUpdateMe: (me: MeResponse) => void;
   onOpenWish: (id: string) => void;
   onOpenFreedom: () => void;
 }
 
-export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
+export function Home({ me, onUpdateMe, onOpenWish, onOpenFreedom }: HomeProps) {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<string | null>(null);
   const [freedom, setFreedom] = useState<UserFreedom | null>(null);
 
   const reload = () => {
@@ -40,11 +46,21 @@ export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
           <div className="overline">{ru.home_overline}</div>
           <h1 className="title-serif">{ru.home_title}</h1>
         </div>
-        {!empty && (
-          <button className="add-btn" onClick={() => setAddOpen(true)}>
-            {ru.home_add}
+        <div className="home-head-actions">
+          <button
+            type="button"
+            className="icon-btn-soft"
+            aria-label="настройки"
+            onClick={() => setSettingsOpen(true)}
+          >
+            ⚙
           </button>
-        )}
+          {!empty && (
+            <button className="add-btn" onClick={() => setAddOpen(true)}>
+              {ru.home_add}
+            </button>
+          )}
+        </div>
       </header>
 
       {freedom && freedom.totalPermissions > 0 && (
@@ -104,6 +120,20 @@ export function Home({ onOpenWish, onOpenFreedom }: HomeProps) {
         onCreated={() => { setAddOpen(false); reload(); }}
       />
 
+      {settingsOpen && (
+        <SettingsSheet
+          me={me}
+          onClose={() => setSettingsOpen(false)}
+          onUpdate={onUpdateMe}
+          onOpenPaywall={(reason) => { setSettingsOpen(false); setPaywallReason(reason); }}
+        />
+      )}
+
+      <PaywallSheet
+        open={paywallReason !== null}
+        reason={paywallReason ?? undefined}
+        onClose={() => setPaywallReason(null)}
+      />
     </main>
   );
 }

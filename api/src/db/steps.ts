@@ -16,6 +16,14 @@ export async function listSteps(userId: number, wishId: string): Promise<Step[]>
   return out;
 }
 
+export async function listStepsByUser(userId: number): Promise<Step[]> {
+  const out: Step[] = [];
+  for (const s of steps.values()) {
+    if (s.userId === userId) out.push(s);
+  }
+  return out;
+}
+
 export async function createStep(
   userId: number,
   wishId: string,

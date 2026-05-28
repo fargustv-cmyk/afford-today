@@ -3,6 +3,8 @@
 :root {
   --cream: #FBF3E7;
   --cream-deep: #F6E3C5;
+  --bg-from: #FFF8EC;
+  --bg-to: #EFD3AC;
   --ink: #2B2017;
   --ink-soft: #7A6450;
   --coral: #E0533A;
@@ -10,6 +12,52 @@
   --rose: #D98368;
   --teal: #2F9C8B;
   --card: #FFFDF8;
+  --card-border: rgba(120, 80, 40, 0.08);
+}
+
+[data-theme='night'] {
+  --cream: #1E1A26;
+  --cream-deep: #14101C;
+  --bg-from: #251E33;
+  --bg-to: #100C18;
+  --ink: #F2EBE3;
+  --ink-soft: #A89C8A;
+  --coral: #FF7355;
+  --amber: #F5B255;
+  --rose: #E89478;
+  --teal: #3FB5A0;
+  --card: #2A2433;
+  --card-border: rgba(255, 240, 220, 0.08);
+}
+
+[data-theme='forest'] {
+  --cream: #EAF1E3;
+  --cream-deep: #C9D8B8;
+  --bg-from: #E8F1DC;
+  --bg-to: #B8CFA0;
+  --ink: #1F2B17;
+  --ink-soft: #56714A;
+  --coral: #C44A2D;
+  --amber: #C98A2A;
+  --rose: #B27258;
+  --teal: #2A8F60;
+  --card: #F2F7EB;
+  --card-border: rgba(50, 80, 30, 0.1);
+}
+
+[data-theme='paper'] {
+  --cream: #F3EFE6;
+  --cream-deep: #E2D9C5;
+  --bg-from: #F8F4EB;
+  --bg-to: #DAD0BB;
+  --ink: #3A352B;
+  --ink-soft: #847B6A;
+  --coral: #B85638;
+  --amber: #BC8E3A;
+  --rose: #B58974;
+  --teal: #4F8B7E;
+  --card: #FAF7EE;
+  --card-border: rgba(80, 60, 30, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -18,7 +66,7 @@ html, body {
   margin: 0;
   padding: 0;
   background:
-    radial-gradient(120% 120% at 50% -10%, #FFF8EC 0%, var(--cream-deep) 55%, #EFD3AC 100%);
+    radial-gradient(120% 120% at 50% -10%, var(--bg-from) 0%, var(--cream-deep) 55%, var(--bg-to) 100%);
   color: var(--ink);
   font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -772,6 +820,204 @@ html, body {
   line-height: 1.4;
 }
 
+/* Pro / paywall / themes */
+.pro-pill {
+  display: inline-block;
+  background: var(--coral);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.home-head-actions { display: flex; gap: 8px; align-items: center; }
+.icon-btn-soft {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.icon-btn-soft:active { transform: scale(0.95); }
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.theme-card {
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.theme-card.active { border-color: var(--coral); }
+.theme-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+}
+.theme-label {
+  font-size: 11px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.settings-pro-btn { margin-top: 12px; }
+.settings-pro-active {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.paywall-reason {
+  text-align: center;
+  font-size: 14px;
+  margin: 4px 0 16px;
+}
+.paywall-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.paywall-list li {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.paywall-item-title { font-weight: 700; font-size: 14px; }
+.paywall-item-desc { color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+.paywall-cta { width: 100%; margin-top: 4px; }
+.paywall-foot {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.pack-picker { margin: 8px 0 16px; }
+.pack-picker-label {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.pack-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pack-chip {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+}
+.pack-chip.active {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+.pack-chip.is-pro { border-style: dashed; border-color: var(--coral); }
+.pack-chip.is-pro.active { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+.freedom-pro { margin-top: 32px; }
+.freedom-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 110px;
+  padding: 12px 8px 0;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  margin-bottom: 24px;
+}
+.freedom-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.freedom-bar {
+  width: 100%;
+  max-width: 18px;
+  background: var(--coral);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+}
+.freedom-bar-label {
+  font-size: 10px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.split-bar {
+  display: flex;
+  height: 56px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.split-bar-permission {
+  background: var(--teal);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.split-bar-effort {
+  background: var(--coral);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.freedom-pro-locked {
+  margin-top: 32px;
+  background: var(--card);
+  border: 1.5px dashed var(--card-border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.freedom-pro-locked .pro-pill { margin: 0; }
+.locked-title { margin: 8px 0 0; font-size: 16px; font-weight: 700; }
+.freedom-pro-locked .claim-btn { margin-top: 12px; min-width: 200px; }
+
 /* ───────── Mozhno overlay (SPEC §3.5) ───────── */
 
 .mozhno-overlay {
@@ -1203,7 +1449,7 @@ button.freedom-tile:active:not(:disabled) { transform: scale(0.98); }
   align-items: center;
   padding: 64px 28px 36px;
   background:
-    radial-gradient(120% 120% at 50% -10%, #FFF8EC 0%, var(--cream-deep) 55%, #EFD3AC 100%);
+    radial-gradient(120% 120% at 50% -10%, var(--bg-from) 0%, var(--cream-deep) 55%, var(--bg-to) 100%);
   z-index: 50;
   text-align: center;
 }

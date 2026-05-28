@@ -1,5 +1,13 @@
 import type { FastifyInstance } from 'fastify';
-import type { Step, StepCategory, Wish, MicroPermissionTemplate } from '@afford/shared';
+import type {
+  MicroPermissionPack,
+  MicroPermissionTemplate,
+  Step,
+  StepCategory,
+  Wish
+} from '@afford/shared';
+import { PRO_PACK_TEMPLATES, PRO_PACKS } from '../db/microPacks.js';
+import { isPro } from '../lib/proStatus.js';
 import { createStep, listSteps, markStepDone, getStep } from '../db/steps.js';
 import { getWishById, addPointsToWish } from '../db/wishes.js';
 import { MICRO_TEMPLATES } from '../db/microPermissions.js';
@@ -67,8 +75,31 @@ export async function stepsRoutes(app: FastifyInstance) {
     return { step, wish };
   });
 
-  app.get<{ Reply: { templates: MicroPermissionTemplate[] } }>(
-    '/api/micro-permissions',
-    async () => ({ templates: MICRO_TEMPLATES })
+  app.get<{
+    Querystring: { pack?: string };
+    Reply: { templates: MicroPermissionTemplate[] };
+  }>('/api/micro-permissions', async (req) => {
+    const pack = req.query?.pack;
+    if (!pack || pack === 'default') {
+      return { templates: MICRO_TEMPLATES.map((t) => ({ ...t, pack: 'default' })) };
+    }
+    // Pro pack — only return items if the user is unlocked.
+    const userId = req.tgUser!.id;
+    if (!isPro(userId)) return { templates: [] };
+    return { templates: PRO_PACK_TEMPLATES.filter((t) => t.pack === pack) };
+  });
+
+  app.get<{ Reply: { packs: MicroPermissionPack[] } }>(
+    '/api/micro-permissions/packs',
+    async () => {
+      const defaultPack: MicroPermissionPack = {
+        id: 'default',
+        title: 'общая библиотека',
+        description: '110+ универсальных шагов — позволения и труд во всех сферах.',
+        isPremium: false,
+        count: MICRO_TEMPLATES.length
+      };
+      return { packs: [defaultPack, ...PRO_PACKS.map((p) => p.meta)] };
+    }
   );
 }

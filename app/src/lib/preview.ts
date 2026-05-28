@@ -267,7 +267,33 @@ export const previewApi = {
     }
     return { step: s, wish };
   },
-  microTemplates: async () => ({ templates: mockTemplates }),
+  microTemplates: async (_pack?: string) => ({ templates: mockTemplates }),
+  listPacks: async () => ({
+    packs: [
+      { id: 'default',         title: 'общая библиотека',  description: '110+ шагов на все случаи', isPremium: false, count: mockTemplates.length },
+      { id: 'burnout',         title: 'после выгорания',   description: 'микро-шаги когда пережал',  isPremium: true,  count: 15 },
+      { id: 'first-salary',    title: 'первая зарплата',   description: 'разреши одно настоящее',    isPremium: true,  count: 15 },
+      { id: 'evening-ritual',  title: 'вечерний ритуал',   description: 'собрать вечер заново',      isPremium: true,  count: 15 },
+      { id: 'post-breakup',    title: 'после расставания', description: 'шаги, которые держат',      isPremium: true,  count: 15 }
+    ]
+  }),
+  freedomPro: async () => ({
+    weeks: Array.from({ length: 4 }, (_, i) => ({
+      startsAt: new Date(Date.now() - (3 - i) * 7 * 86400000).toISOString(),
+      count: Math.floor(Math.random() * 6 + 1),
+      value: Math.floor(Math.random() * 8000 + 1000),
+      selfPermissions: Math.floor(Math.random() * 3)
+    })),
+    months: Array.from({ length: 3 }, (_, i) => ({
+      startsAt: new Date(Date.now() - (2 - i) * 30 * 86400000).toISOString(),
+      count: Math.floor(Math.random() * 12 + 3),
+      value: Math.floor(Math.random() * 30000 + 5000),
+      selfPermissions: Math.floor(Math.random() * 5)
+    })),
+    permissionStepsDone: 8,
+    effortStepsDone: 5
+  }),
+  proInvoice: async () => ({ url: 'about:blank', alreadyPro: false }),
   markBought: async (wishId: string) => {
     const wish = mockWishes.find((w) => w.id === wishId);
     if (!wish) throw new Error('not found');

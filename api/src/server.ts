@@ -10,6 +10,8 @@ import { shareRoutes } from './routes/share.js';
 import { freedomRoutes } from './routes/freedom.js';
 import { cronRoutes } from './routes/cron.js';
 import { telegramRoutes } from './routes/telegram.js';
+import { proRoutes } from './routes/pro.js';
+import { loadPaidUsers } from './lib/proStatus.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,7 +48,8 @@ async function buildApp() {
       req.url.startsWith('/api/steps') ||
       req.url.startsWith('/api/micro-permissions') ||
       req.url.startsWith('/api/og') ||
-      req.url.startsWith('/api/freedom')
+      req.url.startsWith('/api/freedom') ||
+      req.url.startsWith('/api/pro')
     ) {
       await requireUser(req, reply);
     }
@@ -59,6 +62,7 @@ async function buildApp() {
   await app.register(freedomRoutes);
   await app.register(cronRoutes);
   await app.register(telegramRoutes);
+  await app.register(proRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 
@@ -84,6 +88,7 @@ async function buildApp() {
 }
 
 assertProductionEnv();
+await loadPaidUsers();
 
 const app = await buildApp();
 await app.listen({ host: '0.0.0.0', port: env.PORT });

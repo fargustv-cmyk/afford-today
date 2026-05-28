@@ -1,15 +1,17 @@
 import type { FastifyInstance } from 'fastify';
-import type { InterpretationMode, MeResponse, UserSettings } from '@afford/shared';
+import type { InterpretationMode, MeResponse, ThemeId, UserSettings } from '@afford/shared';
 import { verifyInitData } from '../lib/verifyInitData.js';
 import { upsertUserFromTelegram, updateUserSettings } from '../db/users.js';
 import { requireUser } from '../lib/requireUser.js';
 import { env } from '../env.js';
+import { isPro } from '../lib/proStatus.js';
 
 interface MeBody {
   initData?: string;
 }
 
 const VALID_INTERPRETATIONS: InterpretationMode[] = ['permission', 'effort', 'both'];
+const VALID_THEMES: ThemeId[] = ['default', 'night', 'forest', 'paper'];
 
 export async function authRoutes(app: FastifyInstance) {
   app.post<{ Body: MeBody; Reply: MeResponse | { error: string } }>('/api/me', async (req, reply) => {
@@ -19,7 +21,7 @@ export async function authRoutes(app: FastifyInstance) {
       return { error: 'Unauthorized' };
     }
     const user = await upsertUserFromTelegram(tg);
-    return { user, unlocked: user.subscriptionStatus === 'active' };
+    return { user, unlocked: isPro(user.id) };
   });
 
   // PATCH user.settings — soft personalisation (interpretation lens, etc).
@@ -42,12 +44,21 @@ export async function authRoutes(app: FastifyInstance) {
     if (typeof patch.notificationsEnabled === 'boolean') {
       clean.notificationsEnabled = patch.notificationsEnabled;
     }
+    if (patch.theme !== undefined) {
+      if (!VALID_THEMES.includes(patch.theme as ThemeId)) {
+        reply.code(400);
+        return { error: 'invalid theme' };
+      }
+      // Non-default themes are Pro. Free users silently snap back to default.
+      const proUser = isPro(userId);
+      clean.theme = patch.theme === 'default' || proUser ? (patch.theme as ThemeId) : 'default';
+    }
 
     const user = await updateUserSettings(userId, clean);
     if (!user) {
       reply.code(404);
       return { error: 'user not found' };
     }
-    return { user, unlocked: user.subscriptionStatus === 'active' };
+    return { user, unlocked: isPro(user.id) };
   });
 }

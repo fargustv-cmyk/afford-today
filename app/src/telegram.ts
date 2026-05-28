@@ -10,6 +10,7 @@ interface TgWebApp {
   setBackgroundColor?: (c: string) => void;
   openLink?: (url: string) => void;
   openTelegramLink?: (url: string) => void;
+  openInvoice?: (url: string, callback?: (status: string) => void) => void;
   HapticFeedback?: {
     impactOccurred?: (k: string) => void;
     notificationOccurred?: (k: string) => void;

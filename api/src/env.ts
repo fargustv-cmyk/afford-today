@@ -20,6 +20,11 @@ export const env = {
   CRON_SECRET: optional('CRON_SECRET'),
   OG_TEST_TOKEN: optional('OG_TEST_TOKEN'), // если задан — /api/og?test=<token>&url=… работает без initData
   TG_WEBHOOK_SECRET: optional('TG_WEBHOOK_SECRET'), // секрет, который Telegram присылает в X-Telegram-Bot-Api-Secret-Token
+  // Pro/Stars billing
+  STARS_PRICE: Number(process.env.STARS_PRICE) || 100,
+  PRO_USER_IDS: optional('PRO_USER_IDS'), // comma-separated Telegram ids who always have Pro
+  UPSTASH_REDIS_REST_URL: optional('UPSTASH_REDIS_REST_URL'),
+  UPSTASH_REDIS_REST_TOKEN: optional('UPSTASH_REDIS_REST_TOKEN'),
   NODE_ENV: optional('NODE_ENV', 'development')
 };
 

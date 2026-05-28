@@ -2,7 +2,9 @@ import type {
   CheckIn,
   CreateWishInput,
   Feeling,
+  FreedomPro,
   MeResponse,
+  MicroPermissionPack,
   MicroPermissionTemplate,
   OgPreview,
   Step,
@@ -73,8 +75,12 @@ export const api = {
       method: 'POST'
     });
   },
-  microTemplates(): Promise<{ templates: MicroPermissionTemplate[] }> {
-    return request<{ templates: MicroPermissionTemplate[] }>('/api/micro-permissions');
+  microTemplates(pack?: string): Promise<{ templates: MicroPermissionTemplate[] }> {
+    const q = pack ? `?pack=${encodeURIComponent(pack)}` : '';
+    return request<{ templates: MicroPermissionTemplate[] }>(`/api/micro-permissions${q}`);
+  },
+  listPacks(): Promise<{ packs: MicroPermissionPack[] }> {
+    return request<{ packs: MicroPermissionPack[] }>('/api/micro-permissions/packs');
   },
   markBought(wishId: string): Promise<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }> {
     return request<{ wish: Wish; belowThreshold: boolean; justPurchased: boolean }>(
@@ -97,10 +103,18 @@ export const api = {
   freedom(): Promise<UserFreedom> {
     return request<UserFreedom>('/api/freedom');
   },
+  freedomPro(): Promise<FreedomPro> {
+    return request<FreedomPro>('/api/freedom/pro');
+  },
   updateSettings(patch: Partial<UserSettings>): Promise<MeResponse> {
     return request<MeResponse>('/api/me/settings', {
       method: 'PATCH',
       body: JSON.stringify(patch)
+    });
+  },
+  proInvoice(): Promise<{ url: string; alreadyPro?: boolean }> {
+    return request<{ url: string; alreadyPro?: boolean }>('/api/pro/invoice', {
+      method: 'POST'
     });
   }
 };
