@@ -180,6 +180,8 @@ export function WishScreen({ me, wishId, onBack }: Props) {
       const { step, wish: w } = await a().markStepDone(stepId);
       setSteps((prev) => prev.map((s) => (s.id === step.id ? step : s)));
       refreshWish(w);
+    } catch (err) {
+      console.warn('markStepDone failed', err);
     } finally {
       setWorking(null);
     }

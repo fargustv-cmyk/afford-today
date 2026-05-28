@@ -21,11 +21,15 @@ import { tg } from '../telegram';
 const initData = (): string => tg?.initData ?? '';
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Only declare a JSON body when there actually is one. Sending
+  // Content-Type: application/json with an empty body makes Fastify reject
+  // with 400 «Body cannot be empty…», which silently broke markStepDone /
+  // markBought / share / etc.
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     'x-init-data': initData(),
     ...(init.headers as Record<string, string> | undefined)
   };
+  if (init.body != null) headers['Content-Type'] = 'application/json';
   const r = await fetch(path, { ...init, headers });
   if (!r.ok) {
     const text = await r.text().catch(() => '');
