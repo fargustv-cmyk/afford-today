@@ -12,12 +12,15 @@ import { freedomRoutes } from './routes/freedom.js';
 import { cronRoutes } from './routes/cron.js';
 import { telegramRoutes } from './routes/telegram.js';
 import { proRoutes } from './routes/pro.js';
+import { wishlistsRoutes } from './routes/wishlists.js';
 import { loadPaidUsers } from './lib/proStatus.js';
 import { loadWishesFromRedis } from './db/wishes.js';
 import { loadStepsFromRedis } from './db/steps.js';
 import { loadEventsFromRedis } from './db/permissionEvents.js';
 import { loadCheckInsFromRedis } from './db/checkIns.js';
 import { loadShareTokensFromRedis } from './db/shareTokens.js';
+import { loadWishlistsFromRedis } from './db/wishlists.js';
+import { loadUserTemplatesFromRedis } from './db/userTemplates.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -51,8 +54,10 @@ async function buildApp() {
     if (req.url.startsWith('/api/telegram/')) return;
     if (
       req.url.startsWith('/api/wishes') ||
+      req.url.startsWith('/api/wishlists') ||
       req.url.startsWith('/api/steps') ||
       req.url.startsWith('/api/micro-permissions') ||
+      req.url.startsWith('/api/user-templates') ||
       req.url.startsWith('/api/og') ||
       req.url.startsWith('/api/freedom') ||
       req.url.startsWith('/api/pro')
@@ -69,6 +74,7 @@ async function buildApp() {
   await app.register(cronRoutes);
   await app.register(telegramRoutes);
   await app.register(proRoutes);
+  await app.register(wishlistsRoutes);
 
   app.get('/api/health', async () => ({ ok: true, ts: Date.now() }));
 
@@ -104,7 +110,9 @@ await Promise.all([
   loadStepsFromRedis(),
   loadEventsFromRedis(),
   loadCheckInsFromRedis(),
-  loadShareTokensFromRedis()
+  loadShareTokensFromRedis(),
+  loadWishlistsFromRedis(),
+  loadUserTemplatesFromRedis()
 ]);
 
 const app = await buildApp();

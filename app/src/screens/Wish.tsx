@@ -7,6 +7,7 @@ import type {
   MicroPermissionTemplate,
   Step,
   StepCategory,
+  UserStepTemplate,
   Wish
 } from '@afford/shared';
 import { ru } from '../i18n/ru';
@@ -23,17 +24,20 @@ const a = () => (isPreview() ? previewApi : api);
 const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
 // Three picks: prefer the wish's domain, respect the interpretation lens,
-// random within tiers so a reshuffle gives something new each time.
+// random within tiers so a reshuffle gives something new each time. User's
+// own saved templates always take priority over the curated library.
 function pickSmart(
   templates: MicroPermissionTemplate[],
+  userTemplates: MicroPermissionTemplate[],
   domain: LifeDomain | undefined,
   interp: InterpretationMode,
   count: number
 ): MicroPermissionTemplate[] {
-  if (templates.length === 0) return [];
+  const all = [...userTemplates, ...templates];
+  if (all.length === 0) return [];
   const filtered = interp === 'both'
-    ? templates.slice()
-    : templates.filter((t) => t.category === interp);
+    ? all.slice()
+    : all.filter((t) => t.category === interp);
   const shuffled = (arr: MicroPermissionTemplate[]) =>
     arr
       .map((v) => [Math.random(), v] as const)
@@ -42,6 +46,17 @@ function pickSmart(
   const matched = domain ? filtered.filter((t) => t.domain === domain) : [];
   const others = domain ? filtered.filter((t) => t.domain !== domain) : filtered;
   return [...shuffled(matched), ...shuffled(others)].slice(0, count);
+}
+
+function userTemplateToTemplate(t: UserStepTemplate): MicroPermissionTemplate {
+  return {
+    id: `user:${t.id}`,
+    title: t.title,
+    suggestedPoints: t.suggestedPoints,
+    domain: t.domain,
+    category: t.category,
+    isPremium: false
+  };
 }
 
 interface Props {
@@ -56,6 +71,8 @@ export function WishScreen({ me, wishId, onBack }: Props) {
   const [templates, setTemplates] = useState<MicroPermissionTemplate[]>([]);
   const [packs, setPacks] = useState<MicroPermissionPack[]>([]);
   const [activePack, setActivePack] = useState<string>('default');
+  const [userTemplates, setUserTemplates] = useState<UserStepTemplate[]>([]);
+  const [savedStepIds, setSavedStepIds] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<string | null>(null);
@@ -73,7 +90,10 @@ export function WishScreen({ me, wishId, onBack }: Props) {
     a().listSteps(wishId).then(({ steps }) => setSteps(steps));
     a().microTemplates('default').then(({ templates }) => setTemplates(templates));
     a().listPacks().then(({ packs }) => setPacks(packs)).catch(() => setPacks([]));
-  }, [wishId]);
+    if (me.unlocked) {
+      a().listUserTemplates().then(({ templates }) => setUserTemplates(templates)).catch(() => setUserTemplates([]));
+    }
+  }, [wishId, me.unlocked]);
 
   const switchPack = async (packId: string) => {
     const pack = packs.find((p) => p.id === packId);
@@ -90,10 +110,37 @@ export function WishScreen({ me, wishId, onBack }: Props) {
   // Hooks must run in stable order; can't sit after the early return below.
   const wishInterp: InterpretationMode = wish?.interpretation ?? 'both';
   const smartPicks = useMemo(
-    () => pickSmart(templates, wish?.domain, wishInterp, 3),
+    () =>
+      pickSmart(
+        templates,
+        userTemplates.map(userTemplateToTemplate),
+        wish?.domain,
+        wishInterp,
+        3
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pickSeed, templates, wish?.domain, wishInterp]
+    [pickSeed, templates, userTemplates, wish?.domain, wishInterp]
   );
+
+  const onSaveStepAsTemplate = async (step: Step) => {
+    if (!me.unlocked) {
+      setPaywallReason(ru.paywall_reason_favorite);
+      return;
+    }
+    if (savedStepIds.has(step.id)) return;
+    try {
+      const { template } = await a().createUserTemplate({
+        title: step.title,
+        points: step.points,
+        domain: wish?.domain ?? 'other',
+        category: step.category
+      });
+      setUserTemplates((prev) => [template, ...prev]);
+      setSavedStepIds((prev) => new Set(prev).add(step.id));
+    } catch (err) {
+      console.warn('save template failed', err);
+    }
+  };
 
   if (!wish) {
     return (
@@ -236,13 +283,24 @@ export function WishScreen({ me, wishId, onBack }: Props) {
                   <span className="step-cat" aria-hidden>{catIcon(s.category)}</span>
                   <span className="step-title">{s.title}</span>
                   {!s.done && (
-                    <button
-                      className="step-done-btn"
-                      onClick={() => onStepDone(s.id)}
-                      disabled={working === s.id}
-                    >
-                      {working === s.id ? '…' : ru.wish_step_done_btn}
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className={`step-fav-btn ${savedStepIds.has(s.id) ? 'saved' : ''}`}
+                        onClick={() => onSaveStepAsTemplate(s)}
+                        aria-label={savedStepIds.has(s.id) ? ru.wish_template_saved : ru.wish_save_template}
+                        title={savedStepIds.has(s.id) ? ru.wish_template_saved : ru.wish_save_template}
+                      >
+                        {savedStepIds.has(s.id) ? '★' : '☆'}
+                      </button>
+                      <button
+                        className="step-done-btn"
+                        onClick={() => onStepDone(s.id)}
+                        disabled={working === s.id}
+                      >
+                        {working === s.id ? '…' : ru.wish_step_done_btn}
+                      </button>
+                    </>
                   )}
                   {s.done && <span className="step-check" aria-hidden>✓</span>}
                 </li>

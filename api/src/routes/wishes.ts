@@ -12,6 +12,8 @@ import type {
 import { listActiveWishes, createWish, markWishPurchased, getWishById } from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
 import { createCheckIn } from '../db/checkIns.js';
+import { getDefaultWishlist, getWishlistById } from '../db/wishlists.js';
+import { isPro } from '../lib/proStatus.js';
 
 const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
 const VALID_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
@@ -23,11 +25,25 @@ interface OgQuery {
 }
 
 export async function wishesRoutes(app: FastifyInstance) {
-  app.get<{ Reply: { wishes: Wish[] } }>('/api/wishes', async (req) => {
-    const userId = req.tgUser!.id;
-    const wishes = await listActiveWishes(userId);
-    return { wishes };
-  });
+  app.get<{ Querystring: { wishlist?: string }; Reply: { wishes: Wish[] } }>(
+    '/api/wishes',
+    async (req) => {
+      const userId = req.tgUser!.id;
+      const filter = req.query?.wishlist ?? null;
+      const wishes = await listActiveWishes(userId, filter);
+      // Legacy wishes with wishlistId=null show up in the default list so they
+      // don't go missing when the user starts using collections.
+      if (filter) {
+        const def = await getDefaultWishlist(userId);
+        if (filter === def.id) {
+          const legacy = (await listActiveWishes(userId)).filter((w) => !w.wishlistId);
+          for (const w of legacy) wishes.push(w);
+          wishes.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+        }
+      }
+      return { wishes };
+    }
+  );
 
   app.post<{ Body: CreateWishInput; Reply: { wish: Wish } | { error: string } }>(
     '/api/wishes',
@@ -51,6 +67,20 @@ export async function wishesRoutes(app: FastifyInstance) {
         body.interpretation && VALID_INTERPRETATIONS.includes(body.interpretation)
           ? body.interpretation
           : 'both';
+      // Validate wishlist ownership; Pro-gate non-default lists server-side.
+      let wishlistId: string | null = null;
+      if (body.wishlistId) {
+        const list = await getWishlistById(body.wishlistId);
+        if (!list || list.userId !== userId) {
+          reply.code(404);
+          return { error: 'wishlist not found' };
+        }
+        if (!list.isDefault && !isPro(userId)) {
+          reply.code(402);
+          return { error: 'pro required for non-default wishlists' };
+        }
+        wishlistId = list.id;
+      }
       const wish = await createWish(userId, {
         title: body.title,
         price,
@@ -59,7 +89,8 @@ export async function wishesRoutes(app: FastifyInstance) {
         type: body.type,
         domain: body.domain,
         interpretation,
-        currency: body.currency || 'RUB'
+        currency: body.currency || 'RUB',
+        wishlistId
       });
       return { wish };
     }

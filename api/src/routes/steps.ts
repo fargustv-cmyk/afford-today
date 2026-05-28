@@ -1,9 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import type {
+  LifeDomain,
   MicroPermissionPack,
   MicroPermissionTemplate,
   Step,
   StepCategory,
+  UserStepTemplate,
   Wish
 } from '@afford/shared';
 import { PRO_PACK_TEMPLATES, PRO_PACKS } from '../db/microPacks.js';
@@ -11,6 +13,11 @@ import { isPro } from '../lib/proStatus.js';
 import { createStep, listSteps, markStepDone, getStep } from '../db/steps.js';
 import { getWishById, addPointsToWish } from '../db/wishes.js';
 import { MICRO_TEMPLATES } from '../db/microPermissions.js';
+import {
+  createUserTemplate,
+  deleteUserTemplate,
+  listUserTemplates
+} from '../db/userTemplates.js';
 
 // Manual step UI offers 10/25/50; library templates use the full 10–30 range.
 // Accept any sane positive integer so template taps don't 400 silently.
@@ -91,6 +98,66 @@ export async function stepsRoutes(app: FastifyInstance) {
     if (!isPro(userId)) return { templates: [] };
     return { templates: PRO_PACK_TEMPLATES.filter((t) => t.pack === pack) };
   });
+
+  // Pro: list / create / delete personal step templates.
+  app.get<{ Reply: { templates: UserStepTemplate[] } | { error: string } }>(
+    '/api/user-templates',
+    async (req, reply) => {
+      const userId = req.tgUser!.id;
+      if (!isPro(userId)) {
+        reply.code(402);
+        return { error: 'pro required' };
+      }
+      const templates = await listUserTemplates(userId);
+      return { templates };
+    }
+  );
+
+  app.post<{
+    Body: { title: string; points: number; domain: LifeDomain; category: StepCategory };
+    Reply: { template: UserStepTemplate } | { error: string };
+  }>('/api/user-templates', async (req, reply) => {
+    const userId = req.tgUser!.id;
+    if (!isPro(userId)) {
+      reply.code(402);
+      return { error: 'pro required' };
+    }
+    const { title, points, domain, category } = req.body ?? ({} as Record<string, unknown>);
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      reply.code(400);
+      return { error: 'title required' };
+    }
+    if (!isValidPoints(points)) {
+      reply.code(400);
+      return { error: 'points out of range' };
+    }
+    const validDomain: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
+    if (!validDomain.includes(domain as LifeDomain)) {
+      reply.code(400);
+      return { error: 'invalid domain' };
+    }
+    const cat: StepCategory =
+      category && VALID_CATEGORIES.includes(category as StepCategory) ? (category as StepCategory) : 'permission';
+    const t = await createUserTemplate(userId, title, points, domain as LifeDomain, cat);
+    return { template: t };
+  });
+
+  app.delete<{ Params: { id: string }; Reply: { ok: true } | { error: string } }>(
+    '/api/user-templates/:id',
+    async (req, reply) => {
+      const userId = req.tgUser!.id;
+      if (!isPro(userId)) {
+        reply.code(402);
+        return { error: 'pro required' };
+      }
+      const ok = await deleteUserTemplate(userId, req.params.id);
+      if (!ok) {
+        reply.code(404);
+        return { error: 'template not found' };
+      }
+      return { ok: true };
+    }
+  );
 
   app.get<{ Reply: { packs: MicroPermissionPack[] } }>(
     '/api/micro-permissions/packs',

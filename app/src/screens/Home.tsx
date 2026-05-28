@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { MeResponse, UserFreedom, Wish } from '@afford/shared';
+import type { MeResponse, UserFreedom, Wish, Wishlist } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { WishCard } from '../components/WishCard';
 import { SettingsSheet } from '../components/Settings';
 import { PaywallSheet } from '../components/Paywall';
+import { Sheet } from '../components/Sheet';
 import { api } from '../api/client';
 import { isPreview, previewApi } from '../lib/preview';
 import { AddWishSheet } from './AddWish';
@@ -19,23 +20,72 @@ interface HomeProps {
 
 export function Home({ me, onUpdateMe, onOpenWish, onOpenFreedom }: HomeProps) {
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [activeListId, setActiveListId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<string | null>(null);
   const [freedom, setFreedom] = useState<UserFreedom | null>(null);
+  const [newListOpen, setNewListOpen] = useState(false);
+  const [newListTitle, setNewListTitle] = useState('');
+  const [creatingList, setCreatingList] = useState(false);
 
-  const reload = () => {
+  const reloadWishes = (listId: string | null) => {
     setLoading(true);
     a()
-      .listWishes()
+      .listWishes(listId ?? undefined)
       .then(({ wishes }) => setWishes(wishes))
       .catch(() => setWishes([]))
       .finally(() => setLoading(false));
+  };
+
+  const reload = () => {
+    a().listWishlists().then(({ wishlists: ls }) => {
+      setWishlists(ls);
+      const fallback = ls.find((l) => l.isDefault)?.id ?? ls[0]?.id ?? null;
+      const next = activeListId && ls.some((l) => l.id === activeListId) ? activeListId : fallback;
+      setActiveListId(next);
+      reloadWishes(next);
+    }).catch(() => {
+      setWishlists([]);
+      reloadWishes(null);
+    });
     a().freedom().then(setFreedom).catch(() => setFreedom(null));
   };
 
   useEffect(reload, []);
+
+  const switchList = (id: string) => {
+    setActiveListId(id);
+    reloadWishes(id);
+  };
+
+  const onTapNewList = () => {
+    if (!me.unlocked) {
+      setPaywallReason(ru.paywall_reason_list ?? 'несколько списков — часть Pro.');
+      return;
+    }
+    setNewListOpen(true);
+  };
+
+  const submitNewList = async () => {
+    const t = newListTitle.trim();
+    if (!t || creatingList) return;
+    setCreatingList(true);
+    try {
+      const { wishlist } = await a().createWishlist(t);
+      setWishlists((prev) => [...prev, wishlist]);
+      setActiveListId(wishlist.id);
+      reloadWishes(wishlist.id);
+      setNewListTitle('');
+      setNewListOpen(false);
+    } catch (err) {
+      console.warn('createWishlist failed', err);
+    } finally {
+      setCreatingList(false);
+    }
+  };
 
   const empty = !loading && wishes.length === 0;
 
@@ -62,6 +112,32 @@ export function Home({ me, onUpdateMe, onOpenWish, onOpenFreedom }: HomeProps) {
           )}
         </div>
       </header>
+
+      {wishlists.length > 0 && (wishlists.length > 1 || me.unlocked) && (
+        <nav className="wishlist-tabs" aria-label="списки">
+          <div className="wishlist-tabs-scroll">
+            {wishlists.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                className={`wishlist-tab ${activeListId === l.id ? 'active' : ''}`}
+                onClick={() => switchList(l.id)}
+              >
+                {l.title}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="wishlist-tab wishlist-tab-add"
+              onClick={onTapNewList}
+              aria-label="новый список"
+            >
+              + список
+              {!me.unlocked && <span className="pro-pill">PRO</span>}
+            </button>
+          </div>
+        </nav>
+      )}
 
       {freedom && freedom.totalPermissions > 0 && (
         <button type="button" className="freedom-strip" onClick={onOpenFreedom}>
@@ -116,9 +192,30 @@ export function Home({ me, onUpdateMe, onOpenWish, onOpenFreedom }: HomeProps) {
 
       <AddWishSheet
         open={addOpen}
+        wishlistId={activeListId}
         onClose={() => setAddOpen(false)}
         onCreated={() => { setAddOpen(false); reload(); }}
       />
+
+      <Sheet open={newListOpen} onClose={() => setNewListOpen(false)} title="новый список">
+        <p className="muted">{ru.wishlist_new_hint ?? 'короткое имя, например «на отпуск».'}</p>
+        <input
+          className="field-input"
+          type="text"
+          value={newListTitle}
+          onChange={(e) => setNewListTitle(e.target.value)}
+          placeholder="на отпуск"
+          autoFocus
+        />
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={submitNewList}
+          disabled={!newListTitle.trim() || creatingList}
+        >
+          {creatingList ? '…' : 'создать'}
+        </button>
+      </Sheet>
 
       {settingsOpen && (
         <SettingsSheet

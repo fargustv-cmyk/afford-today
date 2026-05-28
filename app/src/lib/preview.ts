@@ -9,7 +9,9 @@ import type {
   User,
   UserFreedom,
   UserSettings,
-  Wish
+  UserStepTemplate,
+  Wish,
+  Wishlist
 } from '@afford/shared';
 
 export const isPreview = (): boolean =>
@@ -46,11 +48,17 @@ const mockWishes: Wish[] = [
     pointsRequired: 300,
     pointsEarned: 75,
     status: 'active',
+    wishlistId: null,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     unlockedAt: null,
     purchasedAt: null
   }
 ];
+
+const mockWishlists: Wishlist[] = [
+  { id: 'wl-default', userId: 0, title: 'мой список', isDefault: true, createdAt: new Date().toISOString() }
+];
+const mockUserTemplates: UserStepTemplate[] = [];
 
 // Helper: mirrors server's listActiveWishes filter (active + unlocked only).
 const visibleWishes = () =>
@@ -193,7 +201,58 @@ function maybeUnlockMockWish(w: Wish) {
 export const previewApi = {
   me: async () => mockMe,
   // Mirror the server filter so purchased wishes don't linger on Home.
-  listWishes: async () => ({ wishes: visibleWishes() }),
+  listWishes: async (wishlistId?: string) => ({
+    wishes: visibleWishes().filter((w) =>
+      wishlistId ? (w.wishlistId ?? 'wl-default') === wishlistId : true
+    )
+  }),
+  listWishlists: async () => ({ wishlists: mockWishlists }),
+  createWishlist: async (title: string) => {
+    const w: Wishlist = {
+      id: `wl-${mockId++}`,
+      userId: 0,
+      title,
+      isDefault: false,
+      createdAt: new Date().toISOString()
+    };
+    mockWishlists.push(w);
+    return { wishlist: w };
+  },
+  renameWishlist: async (id: string, title: string) => {
+    const w = mockWishlists.find((x) => x.id === id);
+    if (!w) throw new Error('not found');
+    w.title = title;
+    return { wishlist: w };
+  },
+  deleteWishlist: async (id: string) => {
+    const idx = mockWishlists.findIndex((x) => x.id === id && !x.isDefault);
+    if (idx >= 0) mockWishlists.splice(idx, 1);
+    return { ok: true as const };
+  },
+  listUserTemplates: async () => ({ templates: mockUserTemplates }),
+  createUserTemplate: async (input: {
+    title: string;
+    points: number;
+    domain: LifeDomain;
+    category: StepCategory;
+  }) => {
+    const t: UserStepTemplate = {
+      id: `ut-${mockId++}`,
+      userId: 0,
+      createdAt: new Date().toISOString(),
+      title: input.title,
+      suggestedPoints: input.points,
+      domain: input.domain,
+      category: input.category
+    };
+    mockUserTemplates.unshift(t);
+    return { template: t };
+  },
+  deleteUserTemplate: async (id: string) => {
+    const idx = mockUserTemplates.findIndex((t) => t.id === id);
+    if (idx >= 0) mockUserTemplates.splice(idx, 1);
+    return { ok: true as const };
+  },
   createWish: async (input: import('@afford/shared').CreateWishInput) => {
     const now = new Date().toISOString();
     const threshold =
@@ -222,6 +281,7 @@ export const previewApi = {
       pointsRequired: threshold,
       pointsEarned: 0,
       status: threshold === 0 ? 'unlocked' : 'active',
+      wishlistId: input.wishlistId ?? null,
       createdAt: now,
       unlockedAt: threshold === 0 ? now : null,
       purchasedAt: null

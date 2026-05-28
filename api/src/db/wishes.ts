@@ -71,16 +71,34 @@ export async function markWishPurchased(
   return { wish: w, belowThreshold, justPurchased: true };
 }
 
-export async function listActiveWishes(userId: number): Promise<Wish[]> {
+export async function listActiveWishes(userId: number, wishlistId?: string | null): Promise<Wish[]> {
   const out: Wish[] = [];
   for (const w of wishes.values()) {
-    if (w.userId === userId && (w.status === 'active' || w.status === 'unlocked')) {
-      out.push(w);
+    if (w.userId !== userId) continue;
+    if (w.status !== 'active' && w.status !== 'unlocked') continue;
+    if (wishlistId !== undefined && wishlistId !== null) {
+      if ((w.wishlistId ?? null) !== wishlistId) continue;
     }
+    out.push(w);
   }
   // Newest first
   out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return out;
+}
+
+// When a Pro user deletes a non-default wishlist, sweep its wishes back to
+// the default list so they don't vanish from the user's view.
+export async function reassignWishesFromDeletedList(
+  userId: number,
+  fromListId: string,
+  toListId: string
+): Promise<void> {
+  for (const w of wishes.values()) {
+    if (w.userId === userId && w.wishlistId === fromListId) {
+      w.wishlistId = toListId;
+      hashSet('afford:wishes', w.id, JSON.stringify(w));
+    }
+  }
 }
 
 export async function createWish(userId: number, input: CreateWishInput): Promise<Wish> {
@@ -104,6 +122,7 @@ export async function createWish(userId: number, input: CreateWishInput): Promis
     pointsRequired,
     pointsEarned: 0,
     status,
+    wishlistId: input.wishlistId ?? null,
     createdAt: now,
     unlockedAt: status === 'unlocked' ? now : null,
     purchasedAt: null

@@ -3,6 +3,7 @@ import type {
   CreateWishInput,
   Feeling,
   FreedomPro,
+  LifeDomain,
   MeResponse,
   MicroPermissionPack,
   MicroPermissionTemplate,
@@ -11,7 +12,9 @@ import type {
   StepCategory,
   UserFreedom,
   UserSettings,
-  Wish
+  UserStepTemplate,
+  Wish,
+  Wishlist
 } from '@afford/shared';
 import { tg } from '../telegram';
 
@@ -44,8 +47,27 @@ export const api = {
       body: JSON.stringify({ initData: initData() })
     });
   },
-  listWishes(): Promise<{ wishes: Wish[] }> {
-    return request<{ wishes: Wish[] }>('/api/wishes');
+  listWishes(wishlistId?: string): Promise<{ wishes: Wish[] }> {
+    const q = wishlistId ? `?wishlist=${encodeURIComponent(wishlistId)}` : '';
+    return request<{ wishes: Wish[] }>(`/api/wishes${q}`);
+  },
+  listWishlists(): Promise<{ wishlists: Wishlist[] }> {
+    return request<{ wishlists: Wishlist[] }>('/api/wishlists');
+  },
+  createWishlist(title: string): Promise<{ wishlist: Wishlist }> {
+    return request<{ wishlist: Wishlist }>('/api/wishlists', {
+      method: 'POST',
+      body: JSON.stringify({ title })
+    });
+  },
+  renameWishlist(id: string, title: string): Promise<{ wishlist: Wishlist }> {
+    return request<{ wishlist: Wishlist }>(`/api/wishlists/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title })
+    });
+  },
+  deleteWishlist(id: string): Promise<{ ok: true }> {
+    return request<{ ok: true }>(`/api/wishlists/${id}`, { method: 'DELETE' });
   },
   createWish(input: CreateWishInput): Promise<{ wish: Wish }> {
     return request<{ wish: Wish }>('/api/wishes', {
@@ -74,6 +96,23 @@ export const api = {
     return request<{ step: Step; wish: Wish | null }>(`/api/steps/${stepId}/done`, {
       method: 'POST'
     });
+  },
+  listUserTemplates(): Promise<{ templates: UserStepTemplate[] }> {
+    return request<{ templates: UserStepTemplate[] }>('/api/user-templates');
+  },
+  createUserTemplate(input: {
+    title: string;
+    points: number;
+    domain: LifeDomain;
+    category: StepCategory;
+  }): Promise<{ template: UserStepTemplate }> {
+    return request<{ template: UserStepTemplate }>('/api/user-templates', {
+      method: 'POST',
+      body: JSON.stringify(input)
+    });
+  },
+  deleteUserTemplate(id: string): Promise<{ ok: true }> {
+    return request<{ ok: true }>(`/api/user-templates/${id}`, { method: 'DELETE' });
   },
   microTemplates(pack?: string): Promise<{ templates: MicroPermissionTemplate[] }> {
     const q = pack ? `?pack=${encodeURIComponent(pack)}` : '';

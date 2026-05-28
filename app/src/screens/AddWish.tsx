@@ -19,11 +19,12 @@ const DOMAINS: { key: LifeDomain; label: string }[] = [
 
 interface Props {
   open: boolean;
+  wishlistId?: string | null;
   onClose: () => void;
   onCreated: () => void;
 }
 
-export function AddWishSheet({ open, onClose, onCreated }: Props) {
+export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -68,7 +69,8 @@ export function AddWishSheet({ open, onClose, onCreated }: Props) {
       imageUrl,
       type,
       domain,
-      interpretation
+      interpretation,
+      wishlistId: wishlistId ?? null
     };
     try {
       await a().createWish(input);

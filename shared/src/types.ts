@@ -72,9 +72,28 @@ export interface Wish {
   pointsRequired: number;
   pointsEarned: number;
   status: WishStatus;
+  wishlistId: string | null; // null = «main» (legacy); otherwise points to Wishlist.id
   createdAt: string;
   unlockedAt: string | null;
   purchasedAt: string | null;
+}
+
+export interface Wishlist {
+  id: string;
+  userId: number;
+  title: string;
+  isDefault: boolean; // the auto-created «main» list — can't be deleted or renamed
+  createdAt: string;
+}
+
+export interface UserStepTemplate {
+  id: string;
+  userId: number;
+  title: string;
+  suggestedPoints: number;
+  domain: LifeDomain;
+  category: StepCategory;
+  createdAt: string;
 }
 
 export interface Step {
@@ -133,6 +152,7 @@ export interface CreateWishInput {
   domain: LifeDomain;
   interpretation?: InterpretationMode;
   currency?: string;
+  wishlistId?: string | null;
 }
 
 export interface OgPreview {
