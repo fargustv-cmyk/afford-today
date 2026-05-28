@@ -17,6 +17,7 @@ import { loadWishesFromRedis } from './db/wishes.js';
 import { loadStepsFromRedis } from './db/steps.js';
 import { loadEventsFromRedis } from './db/permissionEvents.js';
 import { loadCheckInsFromRedis } from './db/checkIns.js';
+import { loadShareTokensFromRedis } from './db/shareTokens.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -102,7 +103,8 @@ await Promise.all([
   loadWishesFromRedis(),
   loadStepsFromRedis(),
   loadEventsFromRedis(),
-  loadCheckInsFromRedis()
+  loadCheckInsFromRedis(),
+  loadShareTokensFromRedis()
 ]);
 
 const app = await buildApp();

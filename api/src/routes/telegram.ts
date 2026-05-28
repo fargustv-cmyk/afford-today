@@ -36,7 +36,14 @@ const WELCOME = [
 export async function telegramRoutes(app: FastifyInstance) {
   app.post('/api/telegram/webhook', async (req, reply) => {
     // Telegram authenticates by echoing back the secret we set on setWebhook.
-    if (env.TG_WEBHOOK_SECRET) {
+    // If the secret is missing in production, fail closed — without it anyone
+    // could POST a synthetic successful_payment update and unlock free Pro.
+    if (!env.TG_WEBHOOK_SECRET) {
+      if (env.NODE_ENV === 'production') {
+        reply.code(503);
+        return { ok: false, error: 'webhook secret not configured' };
+      }
+    } else {
       const got = req.headers['x-telegram-bot-api-secret-token'];
       if (got !== env.TG_WEBHOOK_SECRET) {
         reply.code(401);
