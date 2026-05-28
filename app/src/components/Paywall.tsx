@@ -29,11 +29,15 @@ export function PaywallSheet({ open, reason, onClose }: Props) {
       if (!url) return;
       // In Telegram, openInvoice handles the Stars sheet natively.
       if (tg?.openInvoice) {
-        tg.openInvoice(url, () => {
-          // status is 'paid' | 'cancelled' | 'failed' | 'pending'
-          // We don't refetch /api/me here — the user will see Pro reflected
-          // on next app open. Reload anyway to be safe.
-          if (typeof window !== 'undefined') window.location.reload();
+        tg.openInvoice(url, (status) => {
+          // status: 'paid' | 'cancelled' | 'failed' | 'pending'
+          if (status === 'paid') {
+            if (typeof window !== 'undefined') window.location.reload();
+          } else {
+            // cancelled / failed / pending — close paywall, keep user's
+            // context (no reload). They can re-try if needed.
+            onClose();
+          }
         });
       } else if (typeof window !== 'undefined') {
         window.open(url, '_blank');

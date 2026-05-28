@@ -5,17 +5,19 @@
 
 import type { User, UserSettings } from '@afford/shared';
 import type { TgUser } from '../lib/verifyInitData.js';
+import { readSettings, writeSettings } from '../lib/userSettingsStore.js';
 
 const users = new Map<number, User>();
 
 export async function upsertUserFromTelegram(tg: TgUser, locale = 'ru'): Promise<User> {
+  // Always pull persisted settings from Redis so themes/lens survive
+  // server restarts. In-memory cache inside userSettingsStore keeps this cheap.
+  const settings = await readSettings(tg.id);
   const existing = users.get(tg.id);
   if (existing) {
-    // Refresh display-only fields on each session
-    return {
-      ...existing,
-      firstName: tg.first_name
-    };
+    existing.settings = settings;
+    existing.firstName = tg.first_name;
+    return existing;
   }
   const fresh: User = {
     id: tg.id,
@@ -26,7 +28,7 @@ export async function upsertUserFromTelegram(tg: TgUser, locale = 'ru'): Promise
     subscriptionUntil: null,
     giftedTokens: 0,
     selfPermissionFactor: 1,
-    settings: {},
+    settings,
     firstName: tg.first_name
   };
   users.set(tg.id, fresh);
@@ -48,5 +50,6 @@ export async function updateUserSettings(
   const u = users.get(userId);
   if (!u) return null;
   u.settings = { ...u.settings, ...patch };
+  await writeSettings(userId, u.settings);
   return u;
 }
