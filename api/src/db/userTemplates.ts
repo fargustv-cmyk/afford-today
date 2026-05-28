@@ -53,3 +53,14 @@ export async function deleteUserTemplate(userId: number, id: string): Promise<bo
   hashDel(REDIS_KEY, id);
   return true;
 }
+
+export async function wipeUserTemplatesForUser(userId: number): Promise<void> {
+  const ids: string[] = [];
+  for (const [id, t] of userTemplates.entries()) {
+    if (t.userId === userId) ids.push(id);
+  }
+  for (const id of ids) {
+    userTemplates.delete(id);
+    hashDel(REDIS_KEY, id);
+  }
+}

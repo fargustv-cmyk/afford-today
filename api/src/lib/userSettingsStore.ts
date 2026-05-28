@@ -69,3 +69,15 @@ export async function writeSettings(userId: number, settings: UserSettings): Pro
   // Fire-and-forget; in-memory cache makes the next read instant either way.
   void redisSet(keyFor(userId), JSON.stringify(settings));
 }
+
+export async function wipeSettings(userId: number): Promise<void> {
+  cache.delete(userId);
+  if (redisEnabled) {
+    const url = env.UPSTASH_REDIS_REST_URL.replace(/\/$/, '') + '/del/' + encodeURIComponent(keyFor(userId));
+    try {
+      await fetch(url, { headers: { Authorization: `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}` } });
+    } catch (e) {
+      console.warn('[settings] redis del failed', e);
+    }
+  }
+}

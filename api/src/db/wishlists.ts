@@ -82,3 +82,14 @@ export async function deleteWishlist(userId: number, id: string): Promise<boolea
 export async function getWishlistById(id: string): Promise<Wishlist | null> {
   return wishlists.get(id) ?? null;
 }
+
+export async function wipeWishlistsForUser(userId: number): Promise<void> {
+  const ids: string[] = [];
+  for (const [id, w] of wishlists.entries()) {
+    if (w.userId === userId) ids.push(id);
+  }
+  for (const id of ids) {
+    wishlists.delete(id);
+    hashDel(REDIS_KEY, id);
+  }
+}

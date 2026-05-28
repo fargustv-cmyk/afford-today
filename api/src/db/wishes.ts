@@ -6,7 +6,7 @@ import type { CreateWishInput, Wish } from '@afford/shared';
 import { pointsRequiredFor } from '@afford/shared';
 import { createEvent } from './permissionEvents.js';
 import { notifyUnlock } from '../lib/notifications.js';
-import { hashGetAll, hashSet } from '../lib/hashStore.js';
+import { hashDel, hashGetAll, hashSet } from '../lib/hashStore.js';
 
 const REDIS_KEY = 'afford:wishes';
 const wishes = new Map<string, Wish>();
@@ -84,6 +84,18 @@ export async function listActiveWishes(userId: number, wishlistId?: string | nul
   // Newest first
   out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return out;
+}
+
+export async function wipeWishesForUser(userId: number): Promise<string[]> {
+  const ids: string[] = [];
+  for (const [id, w] of wishes.entries()) {
+    if (w.userId === userId) ids.push(id);
+  }
+  for (const id of ids) {
+    wishes.delete(id);
+    hashDel('afford:wishes', id);
+  }
+  return ids;
 }
 
 // When a Pro user deletes a non-default wishlist, sweep its wishes back to

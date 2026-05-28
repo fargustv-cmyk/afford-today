@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { hashGetAll, hashSet } from '../lib/hashStore.js';
+import { hashDel, hashGetAll, hashSet } from '../lib/hashStore.js';
 
 // Persisted share tokens. Each token is an unguessable (96-bit random) pointer
 // to a wish; making the share card image URL public without exposing the wish
@@ -30,4 +30,15 @@ export async function createShareToken(wishId: string, userId: number): Promise<
 
 export async function lookupShareToken(token: string): Promise<TokenRef | null> {
   return tokens.get(token) ?? null;
+}
+
+export async function wipeShareTokensForUser(userId: number): Promise<void> {
+  const remove: string[] = [];
+  for (const [token, ref] of tokens.entries()) {
+    if (ref.userId === userId) remove.push(token);
+  }
+  for (const token of remove) {
+    tokens.delete(token);
+    hashDel(REDIS_KEY, token);
+  }
 }

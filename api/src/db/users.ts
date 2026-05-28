@@ -53,3 +53,7 @@ export async function updateUserSettings(
   await writeSettings(userId, u.settings);
   return u;
 }
+
+export function dropUserFromMemory(userId: number): void {
+  users.delete(userId);
+}

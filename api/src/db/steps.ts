@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Step, StepCategory, StepKind } from '@afford/shared';
-import { hashGetAll, hashSet } from '../lib/hashStore.js';
+import { hashDel, hashGetAll, hashSet } from '../lib/hashStore.js';
 
 const REDIS_KEY = 'afford:steps';
 const steps = new Map<string, Step>();
@@ -32,6 +32,17 @@ export async function listStepsByUser(userId: number): Promise<Step[]> {
     if (s.userId === userId) out.push(s);
   }
   return out;
+}
+
+export async function wipeStepsForUser(userId: number): Promise<void> {
+  const ids: string[] = [];
+  for (const [id, s] of steps.entries()) {
+    if (s.userId === userId) ids.push(id);
+  }
+  for (const id of ids) {
+    steps.delete(id);
+    hashDel('afford:steps', id);
+  }
 }
 
 export async function createStep(

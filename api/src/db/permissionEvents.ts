@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { DomainAgg, LifeDomain, PermissionEvent, UserFreedom } from '@afford/shared';
-import { hashGetAll, hashSet } from '../lib/hashStore.js';
+import { hashDel, hashGetAll, hashSet } from '../lib/hashStore.js';
 
 const ALL_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
 const REDIS_KEY = 'afford:events';
@@ -17,6 +17,17 @@ export async function loadEventsFromRedis(): Promise<void> {
 
 export async function listEvents(userId: number): Promise<PermissionEvent[]> {
   return events.filter((e) => e.userId === userId);
+}
+
+export async function wipeEventsForUser(userId: number): Promise<void> {
+  const ids: string[] = [];
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i]!.userId === userId) {
+      ids.push(events[i]!.id);
+      events.splice(i, 1);
+    }
+  }
+  for (const id of ids) hashDel(REDIS_KEY, id);
 }
 
 export async function createEvent(

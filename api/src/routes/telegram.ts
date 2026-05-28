@@ -6,6 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import { env } from '../env.js';
 import { sendBotMessage } from '../lib/botSend.js';
 import { markPaid } from '../lib/proStatus.js';
+import { wipeUser } from '../lib/userWipe.js';
 
 interface TgChat { id: number; type: string }
 interface TgFrom { id: number; language_code?: string }
@@ -17,10 +18,17 @@ interface TgMessage {
   successful_payment?: TgSuccessfulPayment;
 }
 interface TgPreCheckoutQuery { id: string; from: TgFrom; invoice_payload: string }
+interface TgCallbackQuery {
+  id: string;
+  from: TgFrom;
+  data?: string;
+  message?: { chat: TgChat; message_id: number };
+}
 interface TgUpdate {
   update_id: number;
   message?: TgMessage;
   pre_checkout_query?: TgPreCheckoutQuery;
+  callback_query?: TgCallbackQuery;
 }
 
 const WELCOME = [
@@ -63,6 +71,12 @@ export async function telegramRoutes(app: FastifyInstance) {
       }
     }
     const upd = req.body as TgUpdate | undefined;
+
+    // Inline-button taps (e.g. /reset confirmation).
+    if (upd?.callback_query) {
+      await handleCallbackQuery(upd.callback_query);
+      return { ok: true };
+    }
 
     // Stars pre-checkout: must answer within 10s.
     if (upd?.pre_checkout_query) {
@@ -113,7 +127,64 @@ export async function telegramRoutes(app: FastifyInstance) {
         webAppUrl: env.PUBLIC_APP_URL,
         buttonText: 'открыть'
       });
+    } else if (text === '/reset') {
+      // Two-step: show confirmation with inline button. Wipe happens on callback.
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: msg.chat.id,
+          text:
+            'сбросить аккаунт?\n\nудалю все желания, шаги, карту свободы, вишлисты, избранное и темы оформления.\n\nPro останется — это покупка, не данные.',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: 'стереть всё', callback_data: 'reset:confirm' },
+                { text: 'отмена', callback_data: 'reset:cancel' }
+              ]
+            ]
+          }
+        })
+      }).catch((e) => console.warn('[reset] sendMessage failed', e));
     }
     return { ok: true };
   });
+}
+
+async function handleCallbackQuery(cb: TgCallbackQuery): Promise<void> {
+  // Always answer the callback first so the spinner on the button stops.
+  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: cb.id })
+  }).catch((e) => console.warn('[cb] answer failed', e));
+
+  if (!cb.data || !cb.message) return;
+  if (cb.data === 'reset:cancel') {
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: cb.message.chat.id,
+        message_id: cb.message.message_id,
+        text: 'окей, ничего не трогаю.'
+      })
+    }).catch((e) => console.warn('[cb] edit failed', e));
+    return;
+  }
+  if (cb.data === 'reset:confirm') {
+    await wipeUser(cb.from.id);
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: cb.message.chat.id,
+        message_id: cb.message.message_id,
+        text: 'готово. начинаем заново 🤍\n\nоткрой приложение — увидишь чистый старт. Pro на месте.',
+        reply_markup: {
+          inline_keyboard: [[{ text: 'открыть', web_app: { url: env.PUBLIC_APP_URL } }]]
+        }
+      })
+    }).catch((e) => console.warn('[cb] edit-confirm failed', e));
+  }
 }

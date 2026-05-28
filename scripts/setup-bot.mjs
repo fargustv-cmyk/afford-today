@@ -28,7 +28,8 @@ await call('setMyDescription', {
 await call('setMyCommands', {
   commands: [
     { command: 'start', description: 'открыть афорд' },
-    { command: 'pro', description: 'про-версия за 100 ⭐ навсегда' }
+    { command: 'pro', description: 'про-версия за 100 ⭐ навсегда' },
+    { command: 'reset', description: 'сбросить аккаунт (Pro останется)' }
   ]
 });
 await call('setChatMenuButton', {
