@@ -29,7 +29,7 @@ export async function proRoutes(app: FastifyInstance) {
       const body = {
         title: 'afford.today Pro',
         description:
-          'Темы оформления, тематические библиотеки шагов и расширенная карта свободы. Разово — навсегда.',
+          'Несколько вишлистов, тематические пакеты шагов, избранные шаги, расширенная карта свободы и темы оформления. Разово — навсегда, без подписки.',
         payload,
         currency: 'XTR',
         prices: [{ label: 'Pro', amount: env.STARS_PRICE }]

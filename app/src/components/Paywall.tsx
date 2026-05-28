@@ -51,12 +51,21 @@ export function PaywallSheet({ open, reason, onClose }: Props) {
 
   return (
     <Sheet open={open} onClose={onClose} title={ru.paywall_title}>
+      <p className="paywall-lead">{ru.paywall_lead}</p>
       {reason && <p className="paywall-reason muted">{reason}</p>}
 
       <ul className="paywall-list">
         <li>
+          <span className="paywall-item-title">{ru.paywall_lists_title}</span>
+          <span className="paywall-item-desc">{ru.paywall_lists_desc}</span>
+        </li>
+        <li>
           <span className="paywall-item-title">{ru.paywall_packs_title}</span>
           <span className="paywall-item-desc">{ru.paywall_packs_desc}</span>
+        </li>
+        <li>
+          <span className="paywall-item-title">{ru.paywall_fav_title}</span>
+          <span className="paywall-item-desc">{ru.paywall_fav_desc}</span>
         </li>
         <li>
           <span className="paywall-item-title">{ru.paywall_freedom_title}</span>

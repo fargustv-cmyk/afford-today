@@ -26,11 +26,23 @@ interface TgUpdate {
 const WELCOME = [
   'привет!',
   '',
-  'афорд тудей — твоё личное «можно». добавь, что хочется. сделай пару шагов или просто разреши себе.',
+  'афорд тудей — твоё личное «можно». добавь то, что хочется. сделай пару шагов или просто разреши себе.',
   '',
   'базовое (еда, лекарства, гигиена) — сразу можно, без шагов.',
   '',
   'жми кнопку ниже.'
+].join('\n');
+
+const PRO_PITCH = [
+  'Pro · 100 ⭐ навсегда — пять фич одной разовой покупкой:',
+  '',
+  '• несколько вишлистов («на отпуск», «дом», «себе вкусненького»)',
+  '• 4 тематических пакета шагов («после выгорания», «первая зарплата», «вечерний ритуал», «после расставания»)',
+  '• избранные шаги — свои частые штуки в личной библиотеке',
+  '• карта свободы Pro — тренды по неделям и месяцам',
+  '• 4 темы оформления — тёплая, ночь, лес, бумага',
+  '',
+  'без подписки. открой приложение и нажми «купить Pro».'
 ].join('\n');
 
 export async function telegramRoutes(app: FastifyInstance) {
@@ -75,7 +87,7 @@ export async function telegramRoutes(app: FastifyInstance) {
         await markPaid(fromId);
         await sendBotMessage({
           chatId: msg.chat.id,
-          text: 'Pro активирован. Темы, библиотеки и расширенная карта — твои. Спасибо ❤️',
+          text: 'Pro активирован 🤍\n\nвишлисты, пакеты шагов, избранное, карта свободы Pro и темы — твои. спасибо!',
           webAppUrl: env.PUBLIC_APP_URL,
           buttonText: 'открыть'
         });
@@ -93,6 +105,13 @@ export async function telegramRoutes(app: FastifyInstance) {
         text: WELCOME,
         webAppUrl: env.PUBLIC_APP_URL,
         buttonText: 'открыть афорд'
+      });
+    } else if (text === '/pro') {
+      await sendBotMessage({
+        chatId: msg.chat.id,
+        text: PRO_PITCH,
+        webAppUrl: env.PUBLIC_APP_URL,
+        buttonText: 'открыть'
       });
     }
     return { ok: true };

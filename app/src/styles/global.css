@@ -967,6 +967,13 @@ html, body {
   font-size: 13px;
 }
 
+.paywall-lead {
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
 .paywall-reason {
   text-align: center;
   font-size: 14px;
