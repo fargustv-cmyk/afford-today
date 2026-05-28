@@ -1518,3 +1518,33 @@ button.freedom-tile:active:not(:disabled) { transform: scale(0.98); }
 }
 .onboarding-cta:active:not(:disabled) { transform: scale(0.98); }
 .onboarding-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.first-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: 22px auto 0;
+}
+.first-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 18px;
+  padding: 16px 18px;
+  font-family: 'Onest', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.first-choice-card:hover:not(:disabled) { border-color: var(--coral); }
+.first-choice-card:active:not(:disabled) { transform: scale(0.99); }
+.first-choice-card:disabled { opacity: 0.5; cursor: not-allowed; }
+.first-choice-emoji { font-size: 28px; }
+.first-choice-title { flex: 1; }

@@ -10,11 +10,20 @@ import { ru } from '../i18n/ru';
 interface Props {
   wish: Wish;
   belowThreshold: boolean;
+  hideShare?: boolean;
+  subtitleOverride?: string;
   onShare: () => void;
   onContinue: () => void;
 }
 
-export function Mozhno({ wish, belowThreshold, onShare, onContinue }: Props) {
+export function Mozhno({
+  wish,
+  belowThreshold,
+  hideShare,
+  subtitleOverride,
+  onShare,
+  onContinue
+}: Props) {
   return (
     <div className="mozhno-overlay" role="dialog" aria-modal="true">
       <ConfettiCanvas />
@@ -29,7 +38,7 @@ export function Mozhno({ wish, belowThreshold, onShare, onContinue }: Props) {
           {ru.mozhno_title}
         </h1>
         <p className="mozhno-sub mozhno-reveal" style={{ animationDelay: '.42s' }}>
-          {belowThreshold ? ru.mozhno_sub_below : ru.mozhno_sub_normal}
+          {subtitleOverride ?? (belowThreshold ? ru.mozhno_sub_below : ru.mozhno_sub_normal)}
         </p>
 
         <div className="mozhno-card mozhno-reveal" style={{ animationDelay: '.54s' }}>
@@ -47,10 +56,15 @@ export function Mozhno({ wish, belowThreshold, onShare, onContinue }: Props) {
         </div>
 
         <div className="mozhno-actions mozhno-reveal" style={{ animationDelay: '.66s' }}>
-          <button className="mozhno-btn mozhno-btn-primary" onClick={onShare}>
-            {ru.mozhno_share}
-          </button>
-          <button className="mozhno-btn mozhno-btn-ghost" onClick={onContinue}>
+          {!hideShare && (
+            <button className="mozhno-btn mozhno-btn-primary" onClick={onShare}>
+              {ru.mozhno_share}
+            </button>
+          )}
+          <button
+            className={`mozhno-btn ${hideShare ? 'mozhno-btn-primary' : 'mozhno-btn-ghost'}`}
+            onClick={onContinue}
+          >
             {ru.mozhno_continue}
           </button>
         </div>
