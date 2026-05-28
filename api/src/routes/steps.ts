@@ -12,7 +12,10 @@ import { createStep, listSteps, markStepDone, getStep } from '../db/steps.js';
 import { getWishById, addPointsToWish } from '../db/wishes.js';
 import { MICRO_TEMPLATES } from '../db/microPermissions.js';
 
-const VALID_POINTS = new Set([10, 25, 50]);
+// Manual step UI offers 10/25/50; library templates use the full 10–30 range.
+// Accept any sane positive integer so template taps don't 400 silently.
+const isValidPoints = (n: unknown): n is number =>
+  typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= 100;
 const VALID_CATEGORIES: StepCategory[] = ['permission', 'effort'];
 
 export async function stepsRoutes(app: FastifyInstance) {
@@ -46,9 +49,9 @@ export async function stepsRoutes(app: FastifyInstance) {
       reply.code(400);
       return { error: 'title required' };
     }
-    if (typeof points !== 'number' || !VALID_POINTS.has(points)) {
+    if (!isValidPoints(points)) {
       reply.code(400);
-      return { error: 'points must be 10, 25 or 50' };
+      return { error: 'points must be a positive integer between 1 and 100' };
     }
     const cat: StepCategory = category && VALID_CATEGORIES.includes(category) ? category : 'permission';
     const step = await createStep(userId, req.params.wishId, title, points, 'step', cat);

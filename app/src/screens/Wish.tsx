@@ -149,6 +149,10 @@ export function WishScreen({ me, wishId, onBack }: Props) {
       const { step } = await a().createStep(wishId, tpl.title, tpl.suggestedPoints, tpl.category);
       setSteps((prev) => [...prev, step]);
       setLibOpen(false);
+    } catch (err) {
+      // Surface failures instead of swallowing them silently; otherwise the
+      // user taps a card and nothing happens.
+      console.warn('template tap failed', err);
     } finally {
       setWorking(null);
     }
