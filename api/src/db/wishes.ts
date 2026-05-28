@@ -6,8 +6,18 @@ import type { CreateWishInput, Wish } from '@afford/shared';
 import { pointsRequiredFor } from '@afford/shared';
 import { createEvent } from './permissionEvents.js';
 import { notifyUnlock } from '../lib/notifications.js';
+import { hashGetAll, hashSet } from '../lib/hashStore.js';
 
+const REDIS_KEY = 'afford:wishes';
 const wishes = new Map<string, Wish>();
+
+function persist(w: Wish) { hashSet(REDIS_KEY, w.id, JSON.stringify(w)); }
+
+export async function loadWishesFromRedis(): Promise<void> {
+  const map = await hashGetAll<Wish>(REDIS_KEY);
+  for (const w of Object.values(map)) wishes.set(w.id, w);
+  console.log(`[wishes] loaded ${wishes.size} wish(es) from redis`);
+}
 
 export async function getWishById(id: string): Promise<Wish | null> {
   return wishes.get(id) ?? null;
@@ -30,6 +40,7 @@ export async function addPointsToWish(wishId: string, points: number): Promise<W
     // Fire-and-forget bot congrats; never block the API response on it.
     notifyUnlock(w).catch((err) => console.warn('notifyUnlock failed', err));
   }
+  persist(w);
   return w;
 }
 
@@ -56,6 +67,7 @@ export async function markWishPurchased(
   // If unlocked event hasn't been written yet (purchased without filling the
   // bar), this is the only event we ever write for this wish.
   await createEvent(w.userId, w.id, w.price ?? 0, w.domain, belowThreshold);
+  persist(w);
   return { wish: w, belowThreshold, justPurchased: true };
 }
 
@@ -97,5 +109,6 @@ export async function createWish(userId: number, input: CreateWishInput): Promis
     purchasedAt: null
   };
   wishes.set(wish.id, wish);
+  persist(wish);
   return wish;
 }

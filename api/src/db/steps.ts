@@ -1,7 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { Step, StepCategory, StepKind } from '@afford/shared';
+import { hashGetAll, hashSet } from '../lib/hashStore.js';
 
+const REDIS_KEY = 'afford:steps';
 const steps = new Map<string, Step>();
+
+function persist(s: Step) { hashSet(REDIS_KEY, s.id, JSON.stringify(s)); }
+
+export async function loadStepsFromRedis(): Promise<void> {
+  const map = await hashGetAll<Step>(REDIS_KEY);
+  for (const s of Object.values(map)) steps.set(s.id, s);
+  console.log(`[steps] loaded ${steps.size} step(s) from redis`);
+}
 
 export async function listSteps(userId: number, wishId: string): Promise<Step[]> {
   const out: Step[] = [];
@@ -45,6 +55,7 @@ export async function createStep(
     createdAt: new Date().toISOString()
   };
   steps.set(step.id, step);
+  persist(step);
   return step;
 }
 
@@ -57,5 +68,6 @@ export async function markStepDone(userId: number, stepId: string): Promise<Step
   if (!s || s.userId !== userId || s.done) return null;
   s.done = true;
   s.doneAt = new Date().toISOString();
+  persist(s);
   return s;
 }

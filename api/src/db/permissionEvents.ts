@@ -1,9 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import type { DomainAgg, LifeDomain, PermissionEvent, UserFreedom } from '@afford/shared';
+import { hashGetAll, hashSet } from '../lib/hashStore.js';
 
 const ALL_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
+const REDIS_KEY = 'afford:events';
 
 const events: PermissionEvent[] = [];
+
+function persist(e: PermissionEvent) { hashSet(REDIS_KEY, e.id, JSON.stringify(e)); }
+
+export async function loadEventsFromRedis(): Promise<void> {
+  const map = await hashGetAll<PermissionEvent>(REDIS_KEY);
+  for (const e of Object.values(map)) events.push(e);
+  console.log(`[events] loaded ${events.length} event(s) from redis`);
+}
 
 export async function listEvents(userId: number): Promise<PermissionEvent[]> {
   return events.filter((e) => e.userId === userId);
@@ -26,6 +36,7 @@ export async function createEvent(
     createdAt: new Date().toISOString()
   };
   events.push(event);
+  persist(event);
   return event;
 }
 

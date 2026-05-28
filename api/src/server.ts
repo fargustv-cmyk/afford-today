@@ -13,6 +13,10 @@ import { cronRoutes } from './routes/cron.js';
 import { telegramRoutes } from './routes/telegram.js';
 import { proRoutes } from './routes/pro.js';
 import { loadPaidUsers } from './lib/proStatus.js';
+import { loadWishesFromRedis } from './db/wishes.js';
+import { loadStepsFromRedis } from './db/steps.js';
+import { loadEventsFromRedis } from './db/permissionEvents.js';
+import { loadCheckInsFromRedis } from './db/checkIns.js';
 import { requireUser } from './lib/requireUser.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,7 +97,13 @@ async function buildApp() {
 }
 
 assertProductionEnv();
-await loadPaidUsers();
+await Promise.all([
+  loadPaidUsers(),
+  loadWishesFromRedis(),
+  loadStepsFromRedis(),
+  loadEventsFromRedis(),
+  loadCheckInsFromRedis()
+]);
 
 const app = await buildApp();
 await app.listen({ host: '0.0.0.0', port: env.PORT });
