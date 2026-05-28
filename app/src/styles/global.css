@@ -730,6 +730,38 @@ html, body {
   flex-direction: column;
   gap: 6px;
 }
+
+.smart-picks {
+  margin-top: 6px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.smart-picks .micro-list { margin-top: 4px; }
+.smart-picks-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+.link-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 0;
+  color: var(--ink-soft);
+  font-family: 'Onest', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+.link-btn:hover { color: var(--coral); }
+.link-btn:active { opacity: 0.7; }
 .micro-title {
   font-family: 'Unbounded', sans-serif;
   font-size: 18px;

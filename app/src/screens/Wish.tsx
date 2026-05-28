@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type {
   InterpretationMode,
+  LifeDomain,
   MeResponse,
   MicroPermissionPack,
   MicroPermissionTemplate,
@@ -21,6 +22,28 @@ const a = () => (isPreview() ? previewApi : api);
 
 const catIcon = (c?: StepCategory) => (c === 'effort' ? '💪' : '🌿');
 
+// Three picks: prefer the wish's domain, respect the interpretation lens,
+// random within tiers so a reshuffle gives something new each time.
+function pickSmart(
+  templates: MicroPermissionTemplate[],
+  domain: LifeDomain | undefined,
+  interp: InterpretationMode,
+  count: number
+): MicroPermissionTemplate[] {
+  if (templates.length === 0) return [];
+  const filtered = interp === 'both'
+    ? templates.slice()
+    : templates.filter((t) => t.category === interp);
+  const shuffled = (arr: MicroPermissionTemplate[]) =>
+    arr
+      .map((v) => [Math.random(), v] as const)
+      .sort((a, b) => a[0] - b[0])
+      .map(([, v]) => v);
+  const matched = domain ? filtered.filter((t) => t.domain === domain) : [];
+  const others = domain ? filtered.filter((t) => t.domain !== domain) : filtered;
+  return [...shuffled(matched), ...shuffled(others)].slice(0, count);
+}
+
 interface Props {
   me: MeResponse;
   wishId: string;
@@ -36,6 +59,7 @@ export function WishScreen({ me, wishId, onBack }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<string | null>(null);
+  const [pickSeed, setPickSeed] = useState(0);
   const [working, setWorking] = useState<string | null>(null);
   const [mozhno, setMozhno] = useState<null | { belowThreshold: boolean; closeToHome: boolean }>(null);
   const [checkInOpen, setCheckInOpen] = useState(false);
@@ -143,6 +167,13 @@ export function WishScreen({ me, wishId, onBack }: Props) {
   // First-time helper: render the library inline when the wish has no steps at all.
   // After that the user gets to it via the «идеи» button (libOpen sheet).
   const showInlineTemplates = !isEssential && !isUnlocked && steps.length === 0;
+  // Three smart picks for the inline block — re-derived on shuffle + when
+  // templates / domain / lens change. Sheet still shows the full library.
+  const smartPicks = useMemo(
+    () => pickSmart(templates, wish?.domain, interpretation, 3),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pickSeed, templates, wish?.domain, interpretation]
+  );
 
   return (
     <main className="shell shell-home">
@@ -215,36 +246,42 @@ export function WishScreen({ me, wishId, onBack }: Props) {
           )}
 
           {showInlineTemplates && (
-            <div className="micro-block">
+            <div className="smart-picks">
               <strong className="micro-title">{ru.wish_steps_empty_title}</strong>
               <p className="micro-body">{ru.wish_steps_empty_body}</p>
 
-              {sectionOrder.map((cat) => {
-                const list = templates.filter((t) => t.category === cat);
-                if (list.length === 0) return null;
-                return (
-                  <div key={cat} className="micro-section">
-                    <div className="micro-section-label">
-                      {cat === 'permission' ? ru.wish_lib_permission_title : ru.wish_lib_effort_title}
-                    </div>
-                    <ul className="micro-list">
-                      {list.map((t) => (
-                        <li key={t.id}>
-                          <button
-                            className={`micro-card cat-${t.category}`}
-                            onClick={() => onTemplateTap(t.id)}
-                            disabled={working === t.id}
-                          >
-                            <span className="micro-card-emoji" aria-hidden>{catIcon(t.category)}</span>
-                            <span className="micro-card-title">{t.title}</span>
-                            <span className="micro-card-points">+{t.suggestedPoints}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
+              <ul className="micro-list">
+                {smartPicks.map((t) => (
+                  <li key={t.id}>
+                    <button
+                      className={`micro-card cat-${t.category}`}
+                      onClick={() => onTemplateTap(t.id)}
+                      disabled={working === t.id}
+                    >
+                      <span className="micro-card-emoji" aria-hidden>{catIcon(t.category)}</span>
+                      <span className="micro-card-title">{t.title}</span>
+                      <span className="micro-card-points">+{t.suggestedPoints}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="smart-picks-foot">
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => setPickSeed((s) => s + 1)}
+                >
+                  ↻ {ru.wish_steps_reshuffle}
+                </button>
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => setLibOpen(true)}
+                >
+                  {ru.wish_steps_open_lib}
+                </button>
+              </div>
             </div>
           )}
         </section>
