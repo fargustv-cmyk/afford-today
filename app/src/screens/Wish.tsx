@@ -87,6 +87,14 @@ export function WishScreen({ me, wishId, onBack }: Props) {
     setTemplates(templates);
   };
 
+  // Hooks must run in stable order; can't sit after the early return below.
+  const wishInterp: InterpretationMode = wish?.interpretation ?? 'both';
+  const smartPicks = useMemo(
+    () => pickSmart(templates, wish?.domain, wishInterp, 3),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pickSeed, templates, wish?.domain, wishInterp]
+  );
+
   if (!wish) {
     return (
       <main className="shell shell-home">
@@ -167,13 +175,6 @@ export function WishScreen({ me, wishId, onBack }: Props) {
   // First-time helper: render the library inline when the wish has no steps at all.
   // After that the user gets to it via the «идеи» button (libOpen sheet).
   const showInlineTemplates = !isEssential && !isUnlocked && steps.length === 0;
-  // Three smart picks for the inline block — re-derived on shuffle + when
-  // templates / domain / lens change. Sheet still shows the full library.
-  const smartPicks = useMemo(
-    () => pickSmart(templates, wish?.domain, interpretation, 3),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pickSeed, templates, wish?.domain, interpretation]
-  );
 
   return (
     <main className="shell shell-home">
