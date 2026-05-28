@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
@@ -76,12 +77,16 @@ async function buildApp() {
   });
 
   // SPA fallback: anything that's not /api/* gets index.html.
+  // Read once at boot; the bundle never changes per deploy. We avoid
+  // reply.sendFile here because fastifyStatic is registered with
+  // decorateReply: false, so that method isn't on the reply object.
+  const indexHtml = fs.readFileSync(path.join(staticRoot, 'index.html'));
   app.setNotFoundHandler((req, reply) => {
     if (req.url.startsWith('/api/')) {
       reply.code(404).send({ error: 'Not found' });
       return;
     }
-    reply.sendFile('index.html', staticRoot);
+    reply.type('text/html').send(indexHtml);
   });
 
   return app;
