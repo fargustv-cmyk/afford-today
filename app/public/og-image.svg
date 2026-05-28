@@ -4,14 +4,18 @@
       <stop offset="0" stop-color="#FFF8EC"/>
       <stop offset="1" stop-color="#EFD3AC"/>
     </linearGradient>
+    <linearGradient id="markBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4E5C6"/>
+      <stop offset="1" stop-color="#E0C595"/>
+    </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <g transform="translate(450 145)">
-    <rect width="300" height="300" rx="68" ry="68" fill="#E0533A"/>
-    <g transform="translate(0 0) scale(0.293)">
+    <rect width="300" height="300" rx="68" ry="68" fill="url(#markBg)"/>
+    <g transform="scale(0.293)">
       <path d="M512 832s-352-218-352-480a208 208 0 0 1 352-150 208 208 0 0 1 352 150c0 262-352 480-352 480z"
-            stroke="#FBF3E7" stroke-width="72" stroke-linejoin="round" fill="#FBF3E7" fill-opacity="0.18"/>
-      <path d="M352 480l112 112 208-240" stroke="#FBF3E7" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            stroke="#5C3A1F" stroke-width="72" stroke-linejoin="round" fill="#FBF3E7" fill-opacity="0.3"/>
+      <path d="M352 480l112 112 208-240" stroke="#5C3A1F" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </g>
   </g>
   <text x="600" y="520" text-anchor="middle"
