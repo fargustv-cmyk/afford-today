@@ -136,6 +136,11 @@ export const api = {
       method: 'POST'
     });
   },
+  postponeWish(wishId: string): Promise<{ wish: Wish; justPostponed: boolean }> {
+    return request<{ wish: Wish; justPostponed: boolean }>(`/api/wishes/${wishId}/postpone`, {
+      method: 'POST'
+    });
+  },
   share(wishId: string): Promise<{ imageUrl: string; shareUrl: string }> {
     return request<{ imageUrl: string; shareUrl: string }>(
       `/api/wishes/${wishId}/share`,

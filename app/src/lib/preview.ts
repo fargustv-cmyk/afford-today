@@ -283,6 +283,7 @@ export const previewApi = {
       status: threshold === 0 ? 'unlocked' : 'active',
       wishlistId: input.wishlistId ?? null,
       createdAt: now,
+      postponedAt: null,
       unlockedAt: threshold === 0 ? now : null,
       purchasedAt: null
     };
@@ -372,6 +373,14 @@ export const previewApi = {
     wish.status = 'unlocked';
     wish.unlockedAt = new Date().toISOString();
     return { wish, justAllowed: true };
+  },
+  postponeWish: async (wishId: string) => {
+    const wish = mockWishes.find((w) => w.id === wishId);
+    if (!wish) throw new Error('not found');
+    if (wish.status !== 'active') return { wish, justPostponed: false };
+    const justPostponed = !wish.postponedAt;
+    wish.postponedAt = new Date().toISOString();
+    return { wish, justPostponed };
   },
   share: async (wishId: string) => {
     const url = `${window.location.origin}/?preview=1&shared=${encodeURIComponent(wishId)}`;

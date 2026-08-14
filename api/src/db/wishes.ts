@@ -92,6 +92,39 @@ export async function allowWish(
   return { wish: w, justAllowed: true };
 }
 
+/** Persist the equally valid "not now" outcome without removing the wish. */
+export async function postponeWish(
+  userId: number,
+  wishId: string
+): Promise<{ wish: Wish | null; justPostponed: boolean }> {
+  const w = wishes.get(wishId);
+  if (!w || w.userId !== userId) return { wish: null, justPostponed: false };
+  if (w.status !== 'active') return { wish: w, justPostponed: false };
+  const justPostponed = !w.postponedAt;
+  w.postponedAt = new Date().toISOString();
+  persist(w);
+  return { wish: w, justPostponed };
+}
+
+export function getWishStateCounts(): {
+  total: number;
+  undecided: number;
+  postponed: number;
+  allowed: number;
+  purchased: number;
+} {
+  const counts = { total: 0, undecided: 0, postponed: 0, allowed: 0, purchased: 0 };
+  for (const wish of wishes.values()) {
+    if (wish.status === 'archived') continue;
+    counts.total += 1;
+    if (wish.status === 'purchased') counts.purchased += 1;
+    else if (wish.status === 'unlocked') counts.allowed += 1;
+    else if (wish.postponedAt) counts.postponed += 1;
+    else counts.undecided += 1;
+  }
+  return counts;
+}
+
 export async function listActiveWishes(userId: number, wishlistId?: string | null): Promise<Wish[]> {
   const out: Wish[] = [];
   for (const w of wishes.values()) {
@@ -157,6 +190,7 @@ export async function createWish(userId: number, input: CreateWishInput): Promis
     status,
     wishlistId: input.wishlistId ?? null,
     createdAt: now,
+    postponedAt: null,
     unlockedAt: status === 'unlocked' ? now : null,
     purchasedAt: null
   };

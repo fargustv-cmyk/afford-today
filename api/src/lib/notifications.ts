@@ -8,8 +8,8 @@ export async function notifyUnlock(wish: Wish): Promise<boolean> {
   return sendBotMessage({
     chatId: wish.userId,
     text:
-      `Шкала по <b>${escapeHtml(wish.title)}</b> заполнена.\n` +
-      `Официально — можно. Иди забирай.`,
+      `Ты решил(а), что <b>${escapeHtml(wish.title)}</b> тебе можно.\n` +
+      `Решение твоё — без шкал и чужого разрешения.`,
     webAppUrl: env.PUBLIC_APP_URL,
     buttonText: 'открыть'
   });
@@ -19,9 +19,9 @@ export async function notifyNudge(userId: number, wish: Wish): Promise<boolean> 
   return sendBotMessage({
     chatId: userId,
     text:
-      `В твоём вишлисте — <b>${escapeHtml(wish.title)}</b>.\n` +
-      `Маленький шаг сегодня — и шкала чуть-чуть пополнее. Без спешки.`,
+      `Ты отложил(а) <b>${escapeHtml(wish.title)}</b>.\n` +
+      `Если хочется — можно спокойно проверить решение ещё раз.`,
     webAppUrl: env.PUBLIC_APP_URL,
-    buttonText: 'сделать шаг'
+    buttonText: 'вернуться к решению'
   });
 }

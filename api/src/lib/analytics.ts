@@ -1,9 +1,10 @@
-import { hashIncrBy } from './hashStore.js';
+import { hashGetAll, hashIncrBy } from './hashStore.js';
 
 export type ProductEvent =
   | 'session_started'
   | 'wish_created'
   | 'wish_allowed'
+  | 'wish_postponed'
   | 'wish_purchased'
   | 'checkin_created'
   | 'share_created'
@@ -14,4 +15,22 @@ export type ProductEvent =
 // core funnel works before introducing a third-party analytics vendor.
 export function trackProductEvent(event: ProductEvent): void {
   hashIncrBy('afford:analytics:v1', event, 1);
+}
+
+const PRODUCT_EVENTS: ProductEvent[] = [
+  'session_started',
+  'wish_created',
+  'wish_allowed',
+  'wish_postponed',
+  'wish_purchased',
+  'checkin_created',
+  'share_created',
+  'pro_paid'
+];
+
+export async function readProductEvents(): Promise<Record<ProductEvent, number>> {
+  const stored = await hashGetAll<number>('afford:analytics:v1');
+  return Object.fromEntries(
+    PRODUCT_EVENTS.map((event) => [event, Number(stored[event]) || 0])
+  ) as Record<ProductEvent, number>;
 }

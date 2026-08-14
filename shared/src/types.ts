@@ -68,12 +68,13 @@ export interface Wish {
   currency: string;
   type: WishType;
   domain: LifeDomain;
-  interpretation: InterpretationMode; // how the user plans to earn it
+  interpretation: InterpretationMode; // legacy compatibility; not used by the v0.3 core UI
   pointsRequired: number;
   pointsEarned: number;
   status: WishStatus;
   wishlistId: string | null; // null = «main» (legacy); otherwise points to Wishlist.id
   createdAt: string;
+  postponedAt?: string | null;
   unlockedAt: string | null;
   purchasedAt: string | null;
 }

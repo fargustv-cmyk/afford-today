@@ -31,6 +31,8 @@ export function WishCard({ wish, onClick }: { wish: Wish; onClick?: () => void }
         )}
         {isUnlocked ? (
           <div className="wish-pill wish-pill-coral">{ru.wish_unlocked}</div>
+        ) : wish.postponedAt ? (
+          <div className="wish-pill wish-pill-neutral">отложено — можно вернуться</div>
         ) : (
           <div className="wish-pill wish-pill-neutral">решение впереди</div>
         )}

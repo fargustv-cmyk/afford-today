@@ -79,6 +79,21 @@ export function WishScreen({ wishId, onBack }: Props) {
     }
   };
 
+  const postpone = async () => {
+    if (!wish || working) return;
+    setWorking(true);
+    setError(null);
+    try {
+      const result = await a().postponeWish(wish.id);
+      setWish(result.wish);
+      onBack();
+    } catch {
+      setError('не получилось сохранить паузу. попробуй ещё раз.');
+    } finally {
+      setWorking(false);
+    }
+  };
+
   const markBought = async () => {
     if (!wish || working) return;
     const wasAlreadyAllowed = wish.status === 'unlocked';
@@ -232,12 +247,14 @@ export function WishScreen({ wishId, onBack }: Props) {
                   <button className="btn-primary decision-primary" onClick={allow} disabled={working}>
                     {working ? 'сохраняю…' : 'я разрешаю себе это'}
                   </button>
-                  <button className="btn-ghost-link" onClick={onBack}>не сейчас — оставлю в списке</button>
+                  <button className="btn-ghost-link" onClick={postpone} disabled={working}>
+                    не сейчас — оставлю в списке
+                  </button>
                 </>
               ) : (
                 <>
-                  <button className="btn-primary decision-primary pause-btn" onClick={onBack}>
-                    сохранить и вернуться позже
+                  <button className="btn-primary decision-primary pause-btn" onClick={postpone} disabled={working}>
+                    {working ? 'сохраняю…' : 'сохранить и вернуться позже'}
                   </button>
                   <button className="btn-ghost-link" onClick={allow} disabled={working}>
                     я всё обдумал(а) и всё равно выбираю это

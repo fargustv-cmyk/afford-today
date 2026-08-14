@@ -9,7 +9,14 @@ import type {
   Wish,
   WishType
 } from '@afford/shared';
-import { listActiveWishes, createWish, markWishPurchased, getWishById, allowWish } from '../db/wishes.js';
+import {
+  allowWish,
+  createWish,
+  getWishById,
+  listActiveWishes,
+  markWishPurchased,
+  postponeWish
+} from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
 import { createCheckIn } from '../db/checkIns.js';
 import { getDefaultWishlist, getWishlistById } from '../db/wishlists.js';
@@ -127,6 +134,19 @@ export async function wishesRoutes(app: FastifyInstance) {
     }
     if (result.justAllowed) trackProductEvent('wish_allowed');
     return { wish: result.wish, justAllowed: result.justAllowed };
+  });
+
+  app.post<{
+    Params: { id: string };
+    Reply: { wish: Wish; justPostponed: boolean } | { error: string };
+  }>('/api/wishes/:id/postpone', async (req, reply) => {
+    const result = await postponeWish(req.tgUser!.id, req.params.id);
+    if (!result.wish) {
+      reply.code(404);
+      return { error: 'wish not found' };
+    }
+    if (result.justPostponed) trackProductEvent('wish_postponed');
+    return { wish: result.wish, justPostponed: result.justPostponed };
   });
 
   // Check-in after purchase (SPEC §7). One reaction tap + optional note.

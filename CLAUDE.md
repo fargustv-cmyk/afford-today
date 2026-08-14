@@ -58,12 +58,16 @@ schema.sql  Database schema
 
 - New wishes start as `active`. "Мне можно" changes the wish to `unlocked`; "Уже купил(а)" changes it
   to `purchased`.
+- "Отложить" keeps the wish `active` and writes `postponedAt`; the card must acknowledge the pause
+  instead of pretending no decision happened. A later "мне можно" remains available.
 - Write exactly one `permission_events` row per wish. Allowing creates it; purchasing later enriches
   the same row with the price.
 - The Freedom screen measures decisions and evidence of self-trust, not money spent.
 - Legacy points/steps fields remain in storage only for backward compatibility and must not drive UI.
 - Auth: validate `initData` HMAC and freshness server-side. State is server-authoritative; Telegram
   CloudStorage is for non-sensitive cache only.
+- Aggregate funnel counters are available only through `/api/admin/product-metrics` with the
+  `CRON_SECRET` bearer token. Never add titles, prices, notes, or Telegram ids to these counters.
 
 ---
 
