@@ -363,10 +363,18 @@ export const previewApi = {
     wish.purchasedAt = new Date().toISOString();
     return { wish, belowThreshold, justPurchased: true };
   },
+  allowWish: async (wishId: string) => {
+    const wish = mockWishes.find((w) => w.id === wishId);
+    if (!wish) throw new Error('not found');
+    if (wish.status === 'unlocked' || wish.status === 'purchased') {
+      return { wish, justAllowed: false };
+    }
+    wish.status = 'unlocked';
+    wish.unlockedAt = new Date().toISOString();
+    return { wish, justAllowed: true };
+  },
   share: async (wishId: string) => {
-    // In ?preview=1 mode we don't actually have a server to render the card;
-    // open a placeholder so the share button does *something* visible.
-    const url = `${window.location.origin}/share/preview-${wishId}.png`;
+    const url = `${window.location.origin}/?preview=1&shared=${encodeURIComponent(wishId)}`;
     return { imageUrl: url, shareUrl: url };
   },
   checkIn: async (wishId: string, feeling: Feeling, note: string) => {
@@ -385,7 +393,7 @@ export const previewApi = {
     return mockMe;
   },
   freedom: async (): Promise<UserFreedom> => {
-    const purchased = mockWishes.filter((w) => w.purchasedAt);
+    const decided = mockWishes.filter((w) => w.unlockedAt || w.purchasedAt);
     const ALL_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
     const byDomain = Object.fromEntries(
       ALL_DOMAINS.map((d) => [d, { count: 0, value: 0, firstAt: null as string | null }])
@@ -393,14 +401,15 @@ export const previewApi = {
     let freedomScore = 0;
     let selfPermissions = 0;
     const events: UserFreedom['events'] = [];
-    for (const w of purchased) {
+    for (const w of decided) {
       const d = w.domain;
       const value = w.price ?? 0;
       const below = w.pointsEarned < w.pointsRequired;
       byDomain[d].count++;
-      byDomain[d].value += value;
-      if (!byDomain[d].firstAt) byDomain[d].firstAt = w.purchasedAt;
-      freedomScore += value;
+      byDomain[d].value += w.purchasedAt ? value : 0;
+      const decidedAt = w.purchasedAt ?? w.unlockedAt ?? new Date().toISOString();
+      if (!byDomain[d].firstAt) byDomain[d].firstAt = decidedAt;
+      freedomScore += w.purchasedAt ? value : 0;
       if (below) selfPermissions++;
       events.push({
         id: `evt-${w.id}`,
@@ -411,11 +420,11 @@ export const previewApi = {
         value,
         domain: d,
         belowThreshold: below,
-        createdAt: w.purchasedAt ?? new Date().toISOString()
+        createdAt: decidedAt
       });
     }
     events.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-    const total = purchased.length;
+    const total = decided.length;
     return {
       totalPermissions: total,
       freedomScore,

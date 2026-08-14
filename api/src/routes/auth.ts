@@ -5,6 +5,7 @@ import { upsertUserFromTelegram, updateUserSettings } from '../db/users.js';
 import { requireUser } from '../lib/requireUser.js';
 import { env } from '../env.js';
 import { isPro } from '../lib/proStatus.js';
+import { trackProductEvent } from '../lib/analytics.js';
 
 interface MeBody {
   initData?: string;
@@ -21,6 +22,7 @@ export async function authRoutes(app: FastifyInstance) {
       return { error: 'Unauthorized' };
     }
     const user = await upsertUserFromTelegram(tg);
+    trackProductEvent('session_started');
     return { user, unlocked: isPro(user.id) };
   });
 

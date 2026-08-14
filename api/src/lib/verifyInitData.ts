@@ -39,6 +39,20 @@ export function verifyInitData(initData: string, botToken: string): TgUser | nul
   const b = Buffer.from(hash, 'hex');
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
 
+  // Telegram initData is a credential, so reject captured payloads that are
+  // replayed long after Telegram issued them.
+  const authDate = Number(params.get('auth_date'));
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const maxAgeSeconds = 24 * 60 * 60;
+  if (
+    !Number.isFinite(authDate) ||
+    authDate <= 0 ||
+    authDate > nowSeconds + 5 * 60 ||
+    nowSeconds - authDate > maxAgeSeconds
+  ) {
+    return null;
+  }
+
   const userRaw = params.get('user');
   if (!userRaw) return null;
   try {

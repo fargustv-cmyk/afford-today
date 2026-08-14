@@ -131,6 +131,11 @@ export const api = {
       { method: 'POST' }
     );
   },
+  allowWish(wishId: string): Promise<{ wish: Wish; justAllowed: boolean }> {
+    return request<{ wish: Wish; justAllowed: boolean }>(`/api/wishes/${wishId}/allow`, {
+      method: 'POST'
+    });
+  },
   share(wishId: string): Promise<{ imageUrl: string; shareUrl: string }> {
     return request<{ imageUrl: string; shareUrl: string }>(
       `/api/wishes/${wishId}/share`,

@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CreateWishInput, Wish } from '@afford/shared';
 import { pointsRequiredFor } from '@afford/shared';
-import { createEvent } from './permissionEvents.js';
+import { recordWishPermission } from './permissionEvents.js';
 import { notifyUnlock } from '../lib/notifications.js';
 import { hashDel, hashGetAll, hashSet } from '../lib/hashStore.js';
 
@@ -36,7 +36,7 @@ export async function addPointsToWish(wishId: string, points: number): Promise<W
   if (w.status === 'active' && w.pointsEarned >= w.pointsRequired) {
     w.status = 'unlocked';
     w.unlockedAt = new Date().toISOString();
-    await createEvent(w.userId, w.id, 0, w.domain, false);
+    await recordWishPermission(w.userId, w.id, 0, w.domain, false);
     // Fire-and-forget bot congrats; never block the API response on it.
     notifyUnlock(w).catch((err) => console.warn('notifyUnlock failed', err));
   }
@@ -66,9 +66,30 @@ export async function markWishPurchased(
   w.purchasedAt = new Date().toISOString();
   // If unlocked event hasn't been written yet (purchased without filling the
   // bar), this is the only event we ever write for this wish.
-  await createEvent(w.userId, w.id, w.price ?? 0, w.domain, belowThreshold);
+  await recordWishPermission(w.userId, w.id, w.price ?? 0, w.domain, belowThreshold);
   persist(w);
   return { wish: w, belowThreshold, justPurchased: true };
+}
+
+/**
+ * The v0.3 core action: the user decides for themselves that the purchase is
+ * allowed. No points or chores are required. Existing wishes remain fully
+ * compatible because we reuse the established `unlocked` status.
+ */
+export async function allowWish(
+  userId: number,
+  wishId: string
+): Promise<{ wish: Wish | null; justAllowed: boolean }> {
+  const w = wishes.get(wishId);
+  if (!w || w.userId !== userId) return { wish: null, justAllowed: false };
+  if (w.status === 'purchased' || w.status === 'unlocked') {
+    return { wish: w, justAllowed: false };
+  }
+  w.status = 'unlocked';
+  w.unlockedAt = new Date().toISOString();
+  await recordWishPermission(w.userId, w.id, 0, w.domain, true);
+  persist(w);
+  return { wish: w, justAllowed: true };
 }
 
 export async function listActiveWishes(userId: number, wishlistId?: string | null): Promise<Wish[]> {

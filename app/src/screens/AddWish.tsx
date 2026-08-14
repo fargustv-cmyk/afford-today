@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import type { CreateWishInput, InterpretationMode, LifeDomain, WishType } from '@afford/shared';
+import { useRef, useState } from 'react';
+import type { CreateWishInput, LifeDomain } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { api } from '../api/client';
@@ -7,101 +7,106 @@ import { isPreview, previewApi } from '../lib/preview';
 
 const a = () => (isPreview() ? previewApi : api);
 
-const DOMAINS: { key: LifeDomain; label: string }[] = [
-  { key: 'clothes', label: ru.domain_clothes },
-  { key: 'leisure', label: ru.domain_leisure },
-  { key: 'comfort', label: ru.domain_comfort },
-  { key: 'health', label: ru.domain_health },
-  { key: 'joy', label: ru.domain_joy },
-  { key: 'food', label: ru.domain_food },
-  { key: 'other', label: ru.domain_other }
-];
-
 interface Props {
   open: boolean;
   wishlistId?: string | null;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated: (id?: string) => void;
+}
+
+function inferDomain(title: string): LifeDomain {
+  const value = title.toLowerCase();
+  if (/одеж|обув|кроссов|пальто|куртк|плать|рубаш|джинс/.test(value)) return 'clothes';
+  if (/врач|лекар|здоров|массаж|спорт|зал|стомат|витамин/.test(value)) return 'health';
+  if (/кофемаш|кофевар/.test(value)) return 'comfort';
+  if (/кофе|еда|ресторан|ужин|обед|завтрак|десерт/.test(value)) return 'food';
+  if (/книг|кино|концерт|билет|игр|отпуск|путешеств/.test(value)) return 'leisure';
+  if (/дом|кресл|диван|плед|наушник|техник|ноутбук|телефон/.test(value)) return 'comfort';
+  if (/цвет|подар|украшен|парфюм|хобби/.test(value)) return 'joy';
+  return 'other';
 }
 
 export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
-  const [type, setType] = useState<WishType>('want');
-  const [domain, setDomain] = useState<LifeDomain>('joy');
-  const [interpretation, setInterpretation] = useState<InterpretationMode>('both');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [ogStatus, setOgStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
   const [saving, setSaving] = useState(false);
-  const ogAbort = useRef<AbortController | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const requestSeq = useRef(0);
 
   const reset = () => {
-    setUrl(''); setTitle(''); setPrice('');
-    setType('want'); setDomain('joy'); setInterpretation('both');
-    setImageUrl(null); setOgStatus('idle');
+    setUrl('');
+    setTitle('');
+    setPrice('');
+    setImageUrl(null);
+    setOgStatus('idle');
+    setError(null);
   };
 
   const onUrlBlur = async () => {
     const trimmed = url.trim();
     if (!trimmed || !/^https?:\/\//i.test(trimmed)) return;
-    ogAbort.current?.abort();
-    ogAbort.current = new AbortController();
+    const seq = ++requestSeq.current;
     setOgStatus('loading');
     try {
       const og = await a().ogPreview(trimmed);
+      if (seq !== requestSeq.current) return;
       if (og.title && !title) setTitle(og.title);
       if (og.imageUrl) setImageUrl(og.imageUrl);
       if (og.price && !price) setPrice(String(Math.round(og.price)));
-      setOgStatus(og.title || og.price ? 'idle' : 'failed');
+      setOgStatus(og.title || og.price || og.imageUrl ? 'idle' : 'failed');
     } catch {
-      setOgStatus('failed');
+      if (seq === requestSeq.current) setOgStatus('failed');
     }
   };
 
   const onSave = async () => {
-    if (!title.trim() || saving) return;
+    const cleanTitle = title.trim();
+    if (!cleanTitle || saving) return;
     setSaving(true);
+    setError(null);
+    const parsedPrice = price ? Number(price.replace(/\s/g, '').replace(',', '.')) : null;
     const input: CreateWishInput = {
-      title: title.trim(),
-      price: price ? Number(price.replace(',', '.')) : null,
+      title: cleanTitle,
+      price: parsedPrice && parsedPrice > 0 ? parsedPrice : null,
       sourceUrl: url.trim() || null,
       imageUrl,
-      type,
-      domain,
-      interpretation,
+      type: 'want',
+      domain: inferDomain(cleanTitle),
+      interpretation: 'permission',
       wishlistId: wishlistId ?? null
     };
     try {
-      await a().createWish(input);
+      const { wish } = await a().createWish(input);
       reset();
-      onCreated();
+      onCreated(wish.id);
     } catch {
-      // soft fail — keep form open, user retries
+      setError('не получилось сохранить. попробуй ещё раз.');
     } finally {
       setSaving(false);
     }
   };
 
-  const isEssential = type === 'essential';
-
   return (
     <Sheet open={open} onClose={() => { reset(); onClose(); }} title={ru.add_title}>
+      <p className="add-lead">Только вещь и цена. Никаких категорий, очков и домашних заданий.</p>
+
       <div className="form">
         <label className="field">
           <span className="field-label">{ru.add_url_label}</span>
           <input
             className="field-input"
             type="url"
-            inputMode="url"
-            placeholder={ru.add_url_placeholder}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onBlur={onUrlBlur}
-            autoComplete="off"
+            placeholder={ru.add_url_placeholder}
+            inputMode="url"
           />
-          {ogStatus === 'loading' && <span className="field-hint">{ru.add_url_loading}</span>}
-          {ogStatus === 'failed' && <span className="field-hint muted">{ru.add_url_failed}</span>}
+          {ogStatus === 'loading' && <span className="field-hint muted">{ru.add_url_loading}</span>}
+          {ogStatus === 'failed' && <span className="field-hint">{ru.add_url_failed}</span>}
         </label>
 
         <label className="field">
@@ -109,100 +114,36 @@ export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
           <input
             className="field-input"
             type="text"
-            placeholder={ru.add_name_placeholder}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            autoComplete="off"
-            required
+            placeholder={ru.add_name_placeholder}
+            autoFocus
           />
         </label>
 
         <label className="field">
           <span className="field-label">{ru.add_price_label}</span>
-          <input
-            className="field-input"
-            type="text"
-            inputMode="numeric"
-            placeholder={ru.add_price_placeholder}
-            value={price}
-            onChange={(e) => setPrice(e.target.value.replace(/[^\d.,]/g, ''))}
-            autoComplete="off"
-          />
+          <div className="price-field">
+            <input
+              className="field-input"
+              type="text"
+              inputMode="decimal"
+              value={price}
+              onChange={(e) => setPrice(e.target.value.replace(/[^\d\s.,]/g, ''))}
+              placeholder={ru.add_price_placeholder}
+            />
+            <span>₽</span>
+          </div>
         </label>
 
-        <div className="field">
-          <span className="field-label">{ru.add_type_label}</span>
-          <div className="seg seg-3">
-            <button
-              type="button"
-              className={`seg-btn ${type === 'essential' ? 'active' : ''}`}
-              onClick={() => setType('essential')}
-            >
-              {ru.add_type_essential}
-            </button>
-            <button
-              type="button"
-              className={`seg-btn ${type === 'need' ? 'active' : ''}`}
-              onClick={() => setType('need')}
-            >
-              {ru.add_type_need}
-            </button>
-            <button
-              type="button"
-              className={`seg-btn ${type === 'want' ? 'active' : ''}`}
-              onClick={() => setType('want')}
-            >
-              {ru.add_type_want}
-            </button>
-          </div>
-          {isEssential && <div className="essential-hint">{ru.add_essential_chip}</div>}
-        </div>
-
-        <div className="field">
-          <span className="field-label">{ru.add_domain_label}</span>
-          <div className="chips">
-            {DOMAINS.map((d) => (
-              <button
-                key={d.key}
-                type="button"
-                className={`chip ${domain === d.key ? 'active' : ''}`}
-                onClick={() => setDomain(d.key)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {!isEssential && (
-          <div className="field">
-            <span className="field-label">{ru.add_interp_label}</span>
-            <div className="chips">
-              <button
-                type="button"
-                className={`chip ${interpretation === 'permission' ? 'active' : ''}`}
-                onClick={() => setInterpretation('permission')}
-              >
-                {ru.settings_interp_permission}
-              </button>
-              <button
-                type="button"
-                className={`chip ${interpretation === 'effort' ? 'active' : ''}`}
-                onClick={() => setInterpretation('effort')}
-              >
-                {ru.settings_interp_effort}
-              </button>
-              <button
-                type="button"
-                className={`chip ${interpretation === 'both' ? 'active' : ''}`}
-                onClick={() => setInterpretation('both')}
-              >
-                {ru.settings_interp_both}
-              </button>
-            </div>
-            <div className="field-hint muted">{ru.add_interp_hint}</div>
+        {imageUrl && (
+          <div className="add-preview">
+            <img src={imageUrl} alt="" />
+            <span>картинка подтянулась</span>
           </div>
         )}
+
+        {error && <div className="form-error" role="alert">{error}</div>}
 
         <button
           type="button"
@@ -210,7 +151,7 @@ export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
           onClick={onSave}
           disabled={!title.trim() || saving}
         >
-          {saving ? '…' : ru.add_save}
+          {saving ? 'сохраняю…' : ru.add_save}
         </button>
       </div>
     </Sheet>

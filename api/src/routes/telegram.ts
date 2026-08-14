@@ -7,6 +7,7 @@ import { env } from '../env.js';
 import { sendBotMessage } from '../lib/botSend.js';
 import { markPaid } from '../lib/proStatus.js';
 import { wipeUser } from '../lib/userWipe.js';
+import { trackProductEvent } from '../lib/analytics.js';
 
 interface TgChat { id: number; type: string }
 interface TgFrom { id: number; language_code?: string }
@@ -34,23 +35,17 @@ interface TgUpdate {
 const WELCOME = [
   'привет!',
   '',
-  'афорд тудей — твоё личное «можно». добавь то, что хочется. сделай пару шагов или просто разреши себе.',
+  'afford.today помогает отличить «я не могу это купить» от «я не могу себе это разрешить».',
   '',
-  'базовое (еда, лекарства, гигиена) — сразу можно, без шагов.',
+  'добавь покупку, проверь три опоры и прими своё решение — без очков, гринда и домашних заданий.',
   '',
   'жми кнопку ниже.'
 ].join('\n');
 
 const PRO_PITCH = [
-  'Pro · 100 ⭐ навсегда — пять фич одной разовой покупкой:',
+  'Pro сейчас на пересборке.',
   '',
-  '• несколько вишлистов («на отпуск», «дом», «себе вкусненького»)',
-  '• 4 тематических пакета шагов («после выгорания», «первая зарплата», «вечерний ритуал», «после расставания»)',
-  '• избранные шаги — свои частые штуки в личной библиотеке',
-  '• карта свободы Pro — тренды по неделям и месяцам',
-  '• 4 темы оформления — тёплая, ночь, лес, бумага',
-  '',
-  'без подписки. открой приложение и нажми «купить Pro».'
+  'основной сценарий бесплатный. мы не будем продавать лишние функции, пока они не станут по-настоящему полезными.'
 ].join('\n');
 
 export async function telegramRoutes(app: FastifyInstance) {
@@ -99,9 +94,10 @@ export async function telegramRoutes(app: FastifyInstance) {
       const fromId = msg.from?.id;
       if (fromId && Number(payloadUserId) === fromId) {
         await markPaid(fromId);
+        trackProductEvent('pro_paid');
         await sendBotMessage({
           chatId: msg.chat.id,
-          text: 'Pro активирован 🤍\n\nвишлисты, пакеты шагов, избранное, карта свободы Pro и темы — твои. спасибо!',
+          text: 'Pro активирован 🤍\n\nстатус сохранён за тобой. основной сценарий остаётся бесплатным, а новые Pro-возможности появятся только после проверки пользы. спасибо!',
           webAppUrl: env.PUBLIC_APP_URL,
           buttonText: 'открыть'
         });

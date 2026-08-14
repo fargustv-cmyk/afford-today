@@ -51,6 +51,30 @@ export async function createEvent(
   return event;
 }
 
+/**
+ * Keep exactly one permission event per wish. The decision can happen before
+ * the purchase (value=0); once the item is bought we enrich that same event
+ * with the real price instead of inflating the user's history with a second
+ * "permission" for the same thing.
+ */
+export async function recordWishPermission(
+  userId: number,
+  wishId: string,
+  value: number,
+  domain: LifeDomain,
+  selfDirected: boolean
+): Promise<PermissionEvent> {
+  const existing = events.find((event) => event.userId === userId && event.wishId === wishId);
+  if (existing) {
+    existing.value = value || existing.value;
+    existing.domain = domain;
+    existing.belowThreshold = existing.belowThreshold || selfDirected;
+    persist(existing);
+    return existing;
+  }
+  return createEvent(userId, wishId, value, domain, selfDirected);
+}
+
 // Equivalent of schema.sql `user_freedom` view + per-domain aggregation.
 // Caller (routes/freedom.ts) attaches the joined `events` array.
 export async function getUserFreedom(userId: number): Promise<Omit<UserFreedom, 'events'>> {

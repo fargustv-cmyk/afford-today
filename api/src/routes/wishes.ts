@@ -9,11 +9,12 @@ import type {
   Wish,
   WishType
 } from '@afford/shared';
-import { listActiveWishes, createWish, markWishPurchased, getWishById } from '../db/wishes.js';
+import { listActiveWishes, createWish, markWishPurchased, getWishById, allowWish } from '../db/wishes.js';
 import { fetchOgPreview } from '../lib/ogParse.js';
 import { createCheckIn } from '../db/checkIns.js';
 import { getDefaultWishlist, getWishlistById } from '../db/wishlists.js';
 import { isPro } from '../lib/proStatus.js';
+import { trackProductEvent } from '../lib/analytics.js';
 
 const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
 const VALID_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
@@ -92,6 +93,7 @@ export async function wishesRoutes(app: FastifyInstance) {
         currency: body.currency || 'RUB',
         wishlistId
       });
+      trackProductEvent('wish_created');
       return { wish };
     }
   );
@@ -107,7 +109,24 @@ export async function wishesRoutes(app: FastifyInstance) {
       reply.code(404);
       return { error: 'wish not found' };
     }
+    if (result.justPurchased) trackProductEvent('wish_purchased');
     return { wish: result.wish, belowThreshold: result.belowThreshold, justPurchased: result.justPurchased };
+  });
+
+  // A conscious "yes" after the short decision ritual. This never checks
+  // points: permission belongs to the user, not to the app.
+  app.post<{
+    Params: { id: string };
+    Reply: { wish: Wish; justAllowed: boolean } | { error: string };
+  }>('/api/wishes/:id/allow', async (req, reply) => {
+    const userId = req.tgUser!.id;
+    const result = await allowWish(userId, req.params.id);
+    if (!result.wish) {
+      reply.code(404);
+      return { error: 'wish not found' };
+    }
+    if (result.justAllowed) trackProductEvent('wish_allowed');
+    return { wish: result.wish, justAllowed: result.justAllowed };
   });
 
   // Check-in after purchase (SPEC §7). One reaction tap + optional note.
@@ -133,6 +152,7 @@ export async function wishesRoutes(app: FastifyInstance) {
       return { error: 'invalid feeling' };
     }
     const checkIn = await createCheckIn(wish.id, feeling, note ?? null);
+    trackProductEvent('checkin_created');
     return { checkIn };
   });
 

@@ -38,12 +38,29 @@ async function exec(command: unknown[]): Promise<unknown> {
 }
 
 export function hashSet(key: string, field: string, value: string): void {
-  // Intentionally not awaited; caller's mutation already touched in-memory.
-  void exec(['HSET', key, field, value]);
+  if (!redisEnabled) return;
+  // Keep the fast write-through behaviour, but retry transient REST failures.
+  // Product data should not disappear because of a single dropped request.
+  void writeEventually(['HSET', key, field, value]);
 }
 
 export function hashDel(key: string, field: string): void {
-  void exec(['HDEL', key, field]);
+  if (!redisEnabled) return;
+  void writeEventually(['HDEL', key, field]);
+}
+
+export function hashIncrBy(key: string, field: string, amount = 1): void {
+  if (!redisEnabled) return;
+  void writeEventually(['HINCRBY', key, field, amount]);
+}
+
+async function writeEventually(command: unknown[]): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const result = await exec(command);
+    if (result !== null) return;
+    await new Promise((resolve) => setTimeout(resolve, 150 * 2 ** attempt));
+  }
+  console.warn(`[redis] ${command[0]} abandoned after retries`);
 }
 
 export async function hashGetAll<T>(key: string): Promise<Record<string, T>> {

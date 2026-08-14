@@ -1,4 +1,6 @@
 import { parse, type HTMLElement } from 'node-html-parser';
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 import type { OgPreview } from '@afford/shared';
 
 // Tries hard to get title / image / price from a public product page.
@@ -8,6 +10,7 @@ import type { OgPreview } from '@afford/shared';
 // server without a residential proxy.
 
 const TIMEOUT_MS = 8_000;
+const MAX_REDIRECTS = 4;
 const MAX_BYTES = 1_500_000; // 1.5 MB — some product pages are heavy
 
 const UA =
@@ -27,20 +30,9 @@ export async function fetchOgPreview(rawUrl: string): Promise<OgPreview> {
   const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
 
   try {
-    const r = await fetch(url, {
-      signal: ac.signal,
-      redirect: 'follow',
-      headers: {
-        'user-agent': UA,
-        'accept':
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.7,en;q=0.6',
-        'sec-ch-ua': '"Chromium";v="121", "Not A(Brand";v="99"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'upgrade-insecure-requests': '1'
-      }
-    });
+    const fetched = await fetchPublicHtml(url, ac.signal);
+    if (!fetched) return empty();
+    const { response: r, finalUrl } = fetched;
     if (!r.ok) return empty();
     const ct = r.headers.get('content-type') ?? '';
     if (!ct.includes('text/html') && !ct.includes('application/xhtml')) return empty();
@@ -61,12 +53,114 @@ export async function fetchOgPreview(rawUrl: string): Promise<OgPreview> {
     }
     const buf = Buffer.concat(chunks);
     const html = new TextDecoder('utf-8', { fatal: false }).decode(buf);
-    return extract(html, url);
+    return extract(html, finalUrl);
   } catch {
     return empty();
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchPublicHtml(
+  initialUrl: URL,
+  signal: AbortSignal
+): Promise<{ response: Response; finalUrl: URL } | null> {
+  let current = initialUrl;
+  for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects += 1) {
+    if (!(await isSafePublicUrl(current))) return null;
+
+    const response = await fetch(current, {
+      signal,
+      redirect: 'manual',
+      headers: {
+        'user-agent': UA,
+        accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.7,en;q=0.6',
+        'sec-ch-ua': '"Chromium";v="121", "Not A(Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'upgrade-insecure-requests': '1'
+      }
+    });
+
+    if (response.status < 300 || response.status >= 400) {
+      return { response, finalUrl: current };
+    }
+
+    const location = response.headers.get('location');
+    if (!location || redirects === MAX_REDIRECTS) return null;
+    try {
+      current = new URL(location, current);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+async function isSafePublicUrl(url: URL): Promise<boolean> {
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+  if (url.username || url.password) return false;
+  if (url.port && url.port !== '80' && url.port !== '443') return false;
+
+  const hostname = url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (
+    !hostname ||
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.internal')
+  ) {
+    return false;
+  }
+
+  if (isIP(hostname)) return !isPrivateAddress(hostname);
+
+  try {
+    const resolved = await lookup(hostname, { all: true, verbatim: true });
+    return resolved.length > 0 && resolved.every(({ address }) => !isPrivateAddress(address));
+  } catch {
+    return false;
+  }
+}
+
+function isPrivateAddress(rawAddress: string): boolean {
+  const address = rawAddress.replace(/^\[|\]$/g, '').split('%')[0].toLowerCase();
+  if (address.startsWith('::ffff:')) {
+    return isPrivateAddress(address.slice('::ffff:'.length));
+  }
+
+  if (isIP(address) === 4) {
+    const [a, b, c] = address.split('.').map(Number);
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 198 && (b === 18 || b === 19)) ||
+      (a === 192 && b === 0 && (c === 0 || c === 2)) ||
+      (a === 198 && b === 51 && c === 100) ||
+      (a === 203 && b === 0 && c === 113)
+    );
+  }
+
+  if (isIP(address) === 6) {
+    if (address === '::' || address === '::1') return true;
+    const first = Number.parseInt(address.split(':')[0] || '0', 16);
+    return (
+      (first & 0xfe00) === 0xfc00 ||
+      (first & 0xffc0) === 0xfe80 ||
+      (first & 0xff00) === 0xff00 ||
+      address.startsWith('2001:db8:')
+    );
+  }
+
+  return true;
 }
 
 function extract(html: string, baseUrl: URL): OgPreview {

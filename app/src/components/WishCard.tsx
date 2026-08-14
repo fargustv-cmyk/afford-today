@@ -2,12 +2,7 @@ import type { Wish } from '@afford/shared';
 import { ru } from '../i18n/ru';
 
 export function WishCard({ wish, onClick }: { wish: Wish; onClick?: () => void }) {
-  const isEssential = wish.type === 'essential';
   const isUnlocked = wish.status === 'unlocked';
-  const pct =
-    wish.pointsRequired > 0
-      ? Math.min(100, (wish.pointsEarned / wish.pointsRequired) * 100)
-      : 100;
 
   return (
     <article
@@ -15,6 +10,12 @@ export function WishCard({ wish, onClick }: { wish: Wish; onClick?: () => void }
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
     >
       <div className="wish-thumb">
         {wish.imageUrl ? (
@@ -28,21 +29,10 @@ export function WishCard({ wish, onClick }: { wish: Wish; onClick?: () => void }
         {wish.price != null && (
           <div className="wish-price">{wish.price.toLocaleString('ru-RU')} {wish.currency}</div>
         )}
-        {isEssential ? (
-          <div className="wish-pill wish-pill-teal">{ru.wish_essential_badge}</div>
-        ) : isUnlocked ? (
+        {isUnlocked ? (
           <div className="wish-pill wish-pill-coral">{ru.wish_unlocked}</div>
         ) : (
-          <>
-            <div className="wish-bar">
-              <div className="wish-bar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="wish-progress">
-              {ru.wish_progress
-                .replace('{earned}', String(wish.pointsEarned))
-                .replace('{required}', String(wish.pointsRequired))}
-            </div>
-          </>
+          <div className="wish-pill wish-pill-neutral">решение впереди</div>
         )}
       </div>
     </article>

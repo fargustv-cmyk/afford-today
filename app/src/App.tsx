@@ -9,15 +9,16 @@ export { applyTheme };
 import { tg } from './telegram';
 import { ru } from './i18n/ru';
 import { api } from './api/client';
-import { isPreview, mockMe } from './lib/preview';
+import { isPreview, mockMe, previewApi } from './lib/preview';
 import { Home } from './screens/Home';
 import { WishScreen } from './screens/Wish';
 import { FreedomScreen } from './screens/Freedom';
 import { Onboarding } from './screens/Onboarding';
+import { Landing } from './screens/Landing';
 
 type Screen = { kind: 'home' } | { kind: 'wish'; id: string } | { kind: 'freedom' };
 
-const ONBOARDED_KEY = 'afford:onboarded:v1';
+const ONBOARDED_KEY = 'afford:onboarded:v2';
 const hasOnboarded = (): boolean => {
   try { return localStorage.getItem(ONBOARDED_KEY) === '1'; } catch { return false; }
 };
@@ -28,13 +29,13 @@ const markOnboarded = () => {
 type State =
   | { kind: 'loading' }
   | { kind: 'authed'; me: MeResponse }
-  | { kind: 'no-telegram' }
   | { kind: 'unauthorized' };
 
 export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(!hasOnboarded());
+  const [startAdding, setStartAdding] = useState(false);
 
   useEffect(() => {
     if (isPreview()) {
@@ -42,8 +43,10 @@ export function App() {
       applyTheme(mockMe.user.settings?.theme ?? 'default');
       return;
     }
-    if (!tg) {
-      setState({ kind: 'no-telegram' });
+    // telegram-web-app.js creates window.Telegram even in a regular browser.
+    // initData is the reliable signal that the page is actually running as a
+    // Mini App. Outside Telegram we deliberately render a public landing page.
+    if (!tg?.initData) {
       return;
     }
     tg.ready();
@@ -54,6 +57,7 @@ export function App() {
       .then((me) => {
         applyTheme(me.user.settings?.theme ?? 'default');
         setState({ kind: 'authed', me });
+        setNeedsOnboarding(me.user.settings?.onboardingComplete !== true && !hasOnboarded());
       })
       .catch((err: unknown) => {
         const e = err as { status?: number } | undefined;
@@ -62,13 +66,23 @@ export function App() {
       });
   }, []);
 
+  if (!isPreview() && !tg?.initData) return <Landing />;
+
   if (state.kind === 'authed') {
     if (needsOnboarding) {
       return (
         <Onboarding
-          onDone={() => {
+          onDone={async () => {
             markOnboarded();
+            setStartAdding(true);
             setNeedsOnboarding(false);
+            try {
+              const me = await (isPreview() ? previewApi : api).updateSettings({ onboardingComplete: true });
+              setState({ kind: 'authed', me });
+            } catch {
+              // Local marker still prevents a broken network from trapping the
+              // user in onboarding. The server syncs on a later settings write.
+            }
           }}
         />
       );
@@ -88,6 +102,8 @@ export function App() {
     return (
       <Home
         me={state.me}
+        initialAddOpen={startAdding}
+        onInitialAddOpened={() => setStartAdding(false)}
         onUpdateMe={(me) => setState({ kind: 'authed', me })}
         onOpenWish={(id) => setScreen({ kind: 'wish', id })}
         onOpenFreedom={() => setScreen({ kind: 'freedom' })}
@@ -103,8 +119,14 @@ export function App() {
 
       <section className="status-card">
         {state.kind === 'loading' && <p className="status">{ru.scaffold_loading}</p>}
-        {state.kind === 'no-telegram' && <p className="status">{ru.scaffold_no_telegram}</p>}
-        {state.kind === 'unauthorized' && <p className="status">{ru.scaffold_unauthorized}</p>}
+        {state.kind === 'unauthorized' && (
+          <>
+            <p className="status">{ru.scaffold_unauthorized}</p>
+            <a className="landing-cta landing-cta-compact" href="https://t.me/afford_today_bot?start=retry">
+              открыть через бота
+            </a>
+          </>
+        )}
       </section>
     </main>
   );
