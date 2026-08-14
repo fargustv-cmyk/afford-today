@@ -72,7 +72,7 @@ export function Home({ initialAddOpen = false, onInitialAddOpened, onOpenWish, o
 
       <section className="home-principle">
         <span aria-hidden>✓</span>
-        <p><strong>Здесь не нужно заслуживать.</strong> Мы только отделим реальный риск для денег от привычного чувства вины.</p>
+        <p><strong>Здесь не нужно заслуживать.</strong> Мы только отделим реальные ограничения от привычного чувства вины.</p>
       </section>
 
       {completed > 0 && (

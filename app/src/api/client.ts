@@ -131,6 +131,12 @@ export const api = {
       { method: 'POST' }
     );
   },
+  completeWish(wishId: string): Promise<{ wish: Wish; belowThreshold: boolean; justCompleted: boolean }> {
+    return request<{ wish: Wish; belowThreshold: boolean; justCompleted: boolean }>(
+      `/api/wishes/${wishId}/complete`,
+      { method: 'POST' }
+    );
+  },
   allowWish(wishId: string): Promise<{ wish: Wish; justAllowed: boolean }> {
     return request<{ wish: Wish; justAllowed: boolean }>(`/api/wishes/${wishId}/allow`, {
       method: 'POST'

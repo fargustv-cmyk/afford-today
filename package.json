@@ -2,7 +2,7 @@
   "name": "afford-today",
   "version": "0.3.0",
   "private": true,
-  "description": "afford.today — a calm purchase decision ritual for Telegram",
+  "description": "afford.today — a calm decision ritual for purchases and personal time",
   "workspaces": [
     "shared",
     "api",

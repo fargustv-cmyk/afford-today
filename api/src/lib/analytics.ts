@@ -6,6 +6,7 @@ export type ProductEvent =
   | 'wish_allowed'
   | 'wish_postponed'
   | 'wish_purchased'
+  | 'action_completed'
   | 'checkin_created'
   | 'share_created'
   | 'pro_paid';
@@ -23,6 +24,7 @@ const PRODUCT_EVENTS: ProductEvent[] = [
   'wish_allowed',
   'wish_postponed',
   'wish_purchased',
+  'action_completed',
   'checkin_created',
   'share_created',
   'pro_paid'

@@ -3,6 +3,7 @@
 
 export type SubscriptionStatus = 'free' | 'active' | 'expired';
 export type WishType = 'essential' | 'need' | 'want';
+export type WishIntent = 'purchase' | 'action';
 export type LifeDomain =
   | 'clothes'
   | 'leisure'
@@ -62,6 +63,7 @@ export interface Wish {
   id: string;
   userId: number;
   title: string;
+  intentKind?: WishIntent; // missing on legacy records means purchase
   imageUrl: string | null;
   sourceUrl: string | null;
   price: number | null;
@@ -146,6 +148,7 @@ export interface MeResponse {
 
 export interface CreateWishInput {
   title: string;
+  intentKind?: WishIntent;
   price?: number | null;
   sourceUrl?: string | null;
   imageUrl?: string | null;

@@ -111,13 +111,27 @@ export function getWishStateCounts(): {
   undecided: number;
   postponed: number;
   allowed: number;
+  completed: number;
   purchased: number;
+  actionsCompleted: number;
 } {
-  const counts = { total: 0, undecided: 0, postponed: 0, allowed: 0, purchased: 0 };
+  const counts = {
+    total: 0,
+    undecided: 0,
+    postponed: 0,
+    allowed: 0,
+    completed: 0,
+    purchased: 0,
+    actionsCompleted: 0
+  };
   for (const wish of wishes.values()) {
     if (wish.status === 'archived') continue;
     counts.total += 1;
-    if (wish.status === 'purchased') counts.purchased += 1;
+    if (wish.status === 'purchased') {
+      counts.completed += 1;
+      if (wish.intentKind === 'action') counts.actionsCompleted += 1;
+      else counts.purchased += 1;
+    }
     else if (wish.status === 'unlocked') counts.allowed += 1;
     else if (wish.postponedAt) counts.postponed += 1;
     else counts.undecided += 1;
@@ -178,6 +192,7 @@ export async function createWish(userId: number, input: CreateWishInput): Promis
     id: randomUUID(),
     userId,
     title: input.title.trim(),
+    intentKind: input.intentKind ?? 'purchase',
     imageUrl: input.imageUrl ?? null,
     sourceUrl: input.sourceUrl ?? null,
     price: input.price ?? null,

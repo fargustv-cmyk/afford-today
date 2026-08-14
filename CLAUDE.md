@@ -1,11 +1,11 @@
 # afford.today — project guide for Claude Code
 
 afford.today is a **Telegram Mini App** that helps people decide whether they can afford a purchase
-and notice when the real blocker is guilt rather than money.
+or take time for themselves, and notice when the real blocker is guilt rather than money or time.
 The audience: people who HAVE money but can't let themselves buy things — from socks to a MacBook —
 because of an internal "you must earn it / you don't deserve it" block.
 
-The app catches the moment of wanting, runs a short three-question check, lets the person make the
+The app catches the moment of wanting, selects a purchase or action check, lets the person make the
 decision, and accumulates proof that they can trust their own judgement.
 
 > Full product + mechanics spec lives in `SPEC.md`. Read it before implementing a feature.
@@ -58,6 +58,8 @@ schema.sql  Database schema
 
 - New wishes start as `active`. "Мне можно" changes the wish to `unlocked`; "Уже купил(а)" changes it
   to `purchased`.
+- `intentKind = purchase | action` controls the complete journey: fields, questions, blockers and
+  completion copy. Legacy records without it are purchases. Never show purchase language for actions.
 - "Отложить" keeps the wish `active` and writes `postponedAt`; the card must acknowledge the pause
   instead of pretending no decision happened. A later "мне можно" remains available.
 - Write exactly one `permission_events` row per wish. Allowing creates it; purchasing later enriches
@@ -82,7 +84,7 @@ schema.sql  Database schema
 
 ## MVP scope
 
-**In:** one purchase list (+ link parsing) · three-question decision ritual · optional blocker naming ·
+**In:** one desire list · purchase/action intent · link parsing for purchases · adaptive three-question ritual · optional blocker naming ·
 "Можно!" moment · share landing · post-purchase reaction · evidence screen · initData auth · aggregate
 funnel analytics.
 

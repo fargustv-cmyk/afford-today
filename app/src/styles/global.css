@@ -1817,6 +1817,28 @@ button.freedom-tile:active:not(:disabled) { transform: scale(0.98); }
 .home-principle p { margin: 1px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
 .home-principle strong { color: var(--ink); }
 .wish-pill-neutral { background: rgba(120, 80, 40, 0.08); color: var(--ink-soft); }
+.intent-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.intent-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 94px;
+  padding: 14px;
+  border: 1px solid rgba(120,80,40,.13);
+  border-radius: 18px;
+  background: rgba(255,253,248,.55);
+  color: var(--ink);
+  font-family: 'Onest', sans-serif;
+  text-align: left;
+}
+.intent-picker button.active {
+  border-color: var(--coral);
+  background: rgba(224,83,58,.08);
+  box-shadow: 0 0 0 1px rgba(224,83,58,.12) inset;
+}
+.intent-picker button > span { font-size: 20px; margin-bottom: 7px; }
+.intent-picker button > strong { font-size: 13px; }
+.intent-picker button > small { margin-top: 2px; color: var(--ink-soft); font-size: 11px; }
 .add-lead { color: var(--ink-soft); font-size: 14px; line-height: 1.45; margin: 0 0 12px; }
 .price-field { position: relative; }
 .price-field .field-input { width: 100%; padding-right: 46px; }

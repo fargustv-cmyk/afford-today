@@ -271,6 +271,7 @@ export const previewApi = {
       id: `mock-${mockId++}`,
       userId: 0,
       title: input.title,
+      intentKind: input.intentKind ?? 'purchase',
       imageUrl: input.imageUrl ?? null,
       sourceUrl: input.sourceUrl ?? null,
       price: input.price ?? null,
@@ -363,6 +364,15 @@ export const previewApi = {
     wish.status = 'purchased';
     wish.purchasedAt = new Date().toISOString();
     return { wish, belowThreshold, justPurchased: true };
+  },
+  completeWish: async (wishId: string) => {
+    const wish = mockWishes.find((w) => w.id === wishId);
+    if (!wish) throw new Error('not found');
+    if (wish.purchasedAt) return { wish, belowThreshold: false, justCompleted: false };
+    const belowThreshold = wish.pointsEarned < wish.pointsRequired;
+    wish.status = 'purchased';
+    wish.purchasedAt = new Date().toISOString();
+    return { wish, belowThreshold, justCompleted: true };
   },
   allowWish: async (wishId: string) => {
     const wish = mockWishes.find((w) => w.id === wishId);

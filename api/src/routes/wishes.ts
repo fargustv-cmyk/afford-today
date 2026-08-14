@@ -7,6 +7,7 @@ import type {
   LifeDomain,
   OgPreview,
   Wish,
+  WishIntent,
   WishType
 } from '@afford/shared';
 import {
@@ -27,6 +28,7 @@ const VALID_TYPES: WishType[] = ['essential', 'need', 'want'];
 const VALID_DOMAINS: LifeDomain[] = ['clothes', 'leisure', 'comfort', 'health', 'joy', 'food', 'other'];
 const VALID_FEELINGS: Feeling[] = ['zero_guilt', 'joy', 'scared_but_good', 'empty', 'guilt'];
 const VALID_INTERPRETATIONS: InterpretationMode[] = ['permission', 'effort', 'both'];
+const VALID_INTENTS: WishIntent[] = ['purchase', 'action'];
 
 interface OgQuery {
   url: string;
@@ -71,6 +73,8 @@ export async function wishesRoutes(app: FastifyInstance) {
         return { error: 'invalid domain' };
       }
       const price = typeof body.price === 'number' && body.price > 0 ? body.price : null;
+      const intentKind: WishIntent =
+        body.intentKind && VALID_INTENTS.includes(body.intentKind) ? body.intentKind : 'purchase';
       const interpretation: InterpretationMode =
         body.interpretation && VALID_INTERPRETATIONS.includes(body.interpretation)
           ? body.interpretation
@@ -91,9 +95,10 @@ export async function wishesRoutes(app: FastifyInstance) {
       }
       const wish = await createWish(userId, {
         title: body.title,
-        price,
-        sourceUrl: typeof body.sourceUrl === 'string' ? body.sourceUrl : null,
-        imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl : null,
+        intentKind,
+        price: intentKind === 'purchase' ? price : null,
+        sourceUrl: intentKind === 'purchase' && typeof body.sourceUrl === 'string' ? body.sourceUrl : null,
+        imageUrl: intentKind === 'purchase' && typeof body.imageUrl === 'string' ? body.imageUrl : null,
         type: body.type,
         domain: body.domain,
         interpretation,
@@ -118,6 +123,25 @@ export async function wishesRoutes(app: FastifyInstance) {
     }
     if (result.justPurchased) trackProductEvent('wish_purchased');
     return { wish: result.wish, belowThreshold: result.belowThreshold, justPurchased: result.justPurchased };
+  });
+
+  app.post<{
+    Params: { id: string };
+    Reply: { wish: Wish; belowThreshold: boolean; justCompleted: boolean } | { error: string };
+  }>('/api/wishes/:id/complete', async (req, reply) => {
+    const result = await markWishPurchased(req.tgUser!.id, req.params.id);
+    if (!result.wish) {
+      reply.code(404);
+      return { error: 'wish not found' };
+    }
+    if (result.justPurchased) {
+      trackProductEvent(result.wish.intentKind === 'action' ? 'action_completed' : 'wish_purchased');
+    }
+    return {
+      wish: result.wish,
+      belowThreshold: result.belowThreshold,
+      justCompleted: result.justPurchased
+    };
   });
 
   // A conscious "yes" after the short decision ritual. This never checks

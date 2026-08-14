@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { CreateWishInput, LifeDomain } from '@afford/shared';
+import type { CreateWishInput, LifeDomain, WishIntent } from '@afford/shared';
 import { ru } from '../i18n/ru';
 import { Sheet } from '../components/Sheet';
 import { api } from '../api/client';
@@ -26,10 +26,23 @@ function inferDomain(title: string): LifeDomain {
   return 'other';
 }
 
+function inferIntentKind(title: string): WishIntent {
+  const value = title.trim().toLowerCase();
+  if (/^(купить|заказать|приобрести|взять себе)/.test(value)) return 'purchase';
+  if (
+    /^(?:хочу\s+)?(полежать|отдохнуть|поспать|погулять|почитать|посмотреть|поиграть|побыть|помолчать|посидеть|порисовать|потанцевать|поплакать|сходить|уйти|взять отгул|взять выходной|не работать|ничего не делать|сказать нет|отказаться|дать себе|устроить себе)/.test(value)
+  ) {
+    return 'action';
+  }
+  return 'purchase';
+}
+
 export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
+  const [intentKind, setIntentKind] = useState<WishIntent>('purchase');
+  const [intentTouched, setIntentTouched] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [ogStatus, setOgStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
   const [saving, setSaving] = useState(false);
@@ -40,6 +53,8 @@ export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
     setUrl('');
     setTitle('');
     setPrice('');
+    setIntentKind('purchase');
+    setIntentTouched(false);
     setImageUrl(null);
     setOgStatus('idle');
     setError(null);
@@ -70,9 +85,10 @@ export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
     const parsedPrice = price ? Number(price.replace(/\s/g, '').replace(',', '.')) : null;
     const input: CreateWishInput = {
       title: cleanTitle,
-      price: parsedPrice && parsedPrice > 0 ? parsedPrice : null,
-      sourceUrl: url.trim() || null,
-      imageUrl,
+      intentKind,
+      price: intentKind === 'purchase' && parsedPrice && parsedPrice > 0 ? parsedPrice : null,
+      sourceUrl: intentKind === 'purchase' ? url.trim() || null : null,
+      imageUrl: intentKind === 'purchase' ? imageUrl : null,
       type: 'want',
       domain: inferDomain(cleanTitle),
       interpretation: 'permission',
@@ -91,50 +107,91 @@ export function AddWishSheet({ open, wishlistId, onClose, onCreated }: Props) {
 
   return (
     <Sheet open={open} onClose={() => { reset(); onClose(); }} title={ru.add_title}>
-      <p className="add-lead">Только вещь и цена. Никаких категорий, очков и домашних заданий.</p>
+      <div className="intent-picker" role="group" aria-label="что ты хочешь себе">
+        <button
+          type="button"
+          aria-pressed={intentKind === 'purchase'}
+          className={intentKind === 'purchase' ? 'active' : ''}
+          onClick={() => { setIntentKind('purchase'); setIntentTouched(true); }}
+        >
+          <span aria-hidden>🛍</span>
+          <strong>покупку</strong>
+          <small>вещь или услугу</small>
+        </button>
+        <button
+          type="button"
+          aria-pressed={intentKind === 'action'}
+          className={intentKind === 'action' ? 'active' : ''}
+          onClick={() => { setIntentKind('action'); setIntentTouched(true); }}
+        >
+          <span aria-hidden>☁</span>
+          <strong>время для себя</strong>
+          <small>отдых или действие</small>
+        </button>
+      </div>
+
+      <p className="add-lead">
+        {intentKind === 'purchase'
+          ? 'Вещь и цена — больше ничего обязательного.'
+          : 'Напиши, что хочешь себе разрешить. Например: полежать 15 минут без вины.'}
+      </p>
 
       <div className="form">
-        <label className="field">
-          <span className="field-label">{ru.add_url_label}</span>
-          <input
-            className="field-input"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onBlur={onUrlBlur}
-            placeholder={ru.add_url_placeholder}
-            inputMode="url"
-          />
-          {ogStatus === 'loading' && <span className="field-hint muted">{ru.add_url_loading}</span>}
-          {ogStatus === 'failed' && <span className="field-hint">{ru.add_url_failed}</span>}
-        </label>
+        {intentKind === 'purchase' && (
+          <label className="field">
+            <span className="field-label">{ru.add_url_label}</span>
+            <input
+              className="field-input"
+              type="url"
+              value={url}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (!intentTouched && e.target.value.trim()) setIntentKind('purchase');
+              }}
+              onBlur={onUrlBlur}
+              placeholder={ru.add_url_placeholder}
+              inputMode="url"
+            />
+            {ogStatus === 'loading' && <span className="field-hint muted">{ru.add_url_loading}</span>}
+            {ogStatus === 'failed' && <span className="field-hint">{ru.add_url_failed}</span>}
+          </label>
+        )}
 
         <label className="field">
-          <span className="field-label">{ru.add_name_label}</span>
+          <span className="field-label">{intentKind === 'purchase' ? ru.add_name_label : 'что хочешь сделать?'}</span>
           <input
             className="field-input"
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={ru.add_name_placeholder}
+            onChange={(e) => {
+              const next = e.target.value;
+              setTitle(next);
+              if (!intentTouched && !url.trim() && !price.trim()) setIntentKind(inferIntentKind(next));
+            }}
+            placeholder={intentKind === 'purchase' ? 'например, наушники' : 'например, полежать 15 минут без вины'}
             autoFocus
           />
         </label>
 
-        <label className="field">
-          <span className="field-label">{ru.add_price_label}</span>
-          <div className="price-field">
-            <input
-              className="field-input"
-              type="text"
-              inputMode="decimal"
-              value={price}
-              onChange={(e) => setPrice(e.target.value.replace(/[^\d\s.,]/g, ''))}
-              placeholder={ru.add_price_placeholder}
-            />
-            <span>₽</span>
-          </div>
-        </label>
+        {intentKind === 'purchase' && (
+          <label className="field">
+            <span className="field-label">{ru.add_price_label}</span>
+            <div className="price-field">
+              <input
+                className="field-input"
+                type="text"
+                inputMode="decimal"
+                value={price}
+                onChange={(e) => {
+                  setPrice(e.target.value.replace(/[^\d\s.,]/g, ''));
+                  if (!intentTouched && e.target.value.trim()) setIntentKind('purchase');
+                }}
+                placeholder={ru.add_price_placeholder}
+              />
+              <span>₽</span>
+            </div>
+          </label>
+        )}
 
         {imageUrl && (
           <div className="add-preview">

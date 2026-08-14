@@ -18,7 +18,7 @@ interface Props {
 type AnswerKey = 'obligations' | 'debt' | 'desire';
 type Answers = Record<AnswerKey, boolean | null>;
 
-const QUESTIONS: Array<{ key: AnswerKey; title: string; hint: string }> = [
+const PURCHASE_QUESTIONS: Array<{ key: AnswerKey; title: string; hint: string }> = [
   {
     key: 'obligations',
     title: 'Обязательные расходы закрыты?',
@@ -36,11 +36,36 @@ const QUESTIONS: Array<{ key: AnswerKey; title: string; hint: string }> = [
   }
 ];
 
-const BLOCKERS = [
+const ACTION_QUESTIONS: Array<{ key: AnswerKey; title: string; hint: string }> = [
+  {
+    key: 'obligations',
+    title: 'Это безопасно для тебя и других?',
+    hint: 'не навредит здоровью и действительно важным обязательствам'
+  },
+  {
+    key: 'debt',
+    title: 'Можно выделить на это время сейчас?',
+    hint: 'ничего срочного не требует тебя прямо в эти минуты'
+  },
+  {
+    key: 'desire',
+    title: 'Ты правда этого хочешь?',
+    hint: 'не «надо», а хочется тебе сегодняшнему'
+  }
+];
+
+const PURCHASE_BLOCKERS = [
   'жалко денег на себя',
   'кажется, что не заслужил(а)',
   'боюсь потом пожалеть',
   'сначала надо быть полезным'
+] as const;
+
+const ACTION_BLOCKERS = [
+  'кажется, что я ленюсь',
+  'сначала надо быть полезным',
+  'другим сейчас важнее',
+  'боюсь потратить время зря'
 ] as const;
 
 export function WishScreen({ wishId, onBack }: Props) {
@@ -94,20 +119,20 @@ export function WishScreen({ wishId, onBack }: Props) {
     }
   };
 
-  const markBought = async () => {
+  const complete = async () => {
     if (!wish || working) return;
     const wasAlreadyAllowed = wish.status === 'unlocked';
     setWorking(true);
     setError(null);
     try {
-      const result = await a().markBought(wish.id);
+      const result = await a().completeWish(wish.id);
       setWish(result.wish);
-      if (result.justPurchased) {
+      if (result.justCompleted) {
         if (wasAlreadyAllowed) setCheckInOpen(true);
         else setMozhno({ closeToHome: true, selfDirected: result.belowThreshold });
       }
     } catch {
-      setError('не получилось отметить покупку. попробуй ещё раз.');
+      setError('не получилось отметить завершение. попробуй ещё раз.');
     } finally {
       setWorking(false);
     }
@@ -142,9 +167,12 @@ export function WishScreen({ wishId, onBack }: Props) {
   }
 
   const allAnswered = Object.values(answers).every((value) => value !== null);
-  const moneyIsSafe = answers.obligations === true && answers.debt === true;
+  const supportsAreSafe = answers.obligations === true && answers.debt === true;
   const desireIsClear = answers.desire === true;
   const isAllowed = wish.status === 'unlocked';
+  const isAction = wish.intentKind === 'action';
+  const questions = isAction ? ACTION_QUESTIONS : PURCHASE_QUESTIONS;
+  const blockers = isAction ? ACTION_BLOCKERS : PURCHASE_BLOCKERS;
 
   return (
     <main className="shell shell-home decision-page">
@@ -171,21 +199,27 @@ export function WishScreen({ wishId, onBack }: Props) {
             <h1>Тебе можно.</h1>
             <p>Не потому что приложение разрешило. Потому что ты проверил(а) опоры и выбрал(а) сам(а).</p>
           </div>
-          <button className="btn-primary" onClick={markBought} disabled={working}>
-            {working ? 'сохраняю…' : 'я купил(а) это'}
+          <button className="btn-primary" onClick={complete} disabled={working}>
+            {working ? 'сохраняю…' : isAction ? 'я сделал(а) это' : 'я купил(а) это'}
           </button>
-          <button className="btn-ghost-link" onClick={onBack}>ещё не купил(а) — вернусь позже</button>
+          <button className="btn-ghost-link" onClick={onBack}>
+            {isAction ? 'ещё не сделал(а) — вернусь позже' : 'ещё не купил(а) — вернусь позже'}
+          </button>
         </section>
       ) : (
         <>
           <section className="decision-intro">
             <div className="overline">быстрая проверка</div>
-            <h1>Можно ли сейчас — без вреда себе?</h1>
-            <p>Это не экзамен и не разрешение от приложения. Просто три опоры перед твоим решением.</p>
+            <h1>{isAction ? 'Можно ли выбрать это — без чувства вины?' : 'Можно ли сейчас — без вреда себе?'}</h1>
+            <p>
+              {isAction
+                ? 'Это не экзамен на продуктивность. Просто три опоры перед твоим решением.'
+                : 'Это не экзамен и не разрешение от приложения. Просто три опоры перед твоим решением.'}
+            </p>
           </section>
 
           <section className="decision-questions">
-            {QUESTIONS.map((question, index) => (
+            {questions.map((question, index) => (
               <article className="decision-question" key={question.key}>
                 <div className="decision-question-number">{index + 1}</div>
                 <div className="decision-question-copy">
@@ -213,7 +247,7 @@ export function WishScreen({ wishId, onBack }: Props) {
           <section className="blocker-card">
             <div className="overline">что сильнее всего мешает?</div>
             <div className="blocker-chips">
-              {BLOCKERS.map((item) => (
+              {blockers.map((item) => (
                 <button
                   key={item}
                   type="button"
@@ -226,23 +260,29 @@ export function WishScreen({ wishId, onBack }: Props) {
           </section>
 
           {allAnswered && (
-            <section className={`decision-result ${moneyIsSafe ? 'safe' : 'pause'}`}>
-              <div className="decision-result-icon" aria-hidden>{moneyIsSafe ? '✓' : '‖'}</div>
-              <div className="overline">{moneyIsSafe ? 'деньги выдерживают' : 'опоры просят паузу'}</div>
+            <section className={`decision-result ${supportsAreSafe ? 'safe' : 'pause'}`}>
+              <div className="decision-result-icon" aria-hidden>{supportsAreSafe ? '✓' : '‖'}</div>
+              <div className="overline">
+                {supportsAreSafe ? (isAction ? 'пространство есть' : 'деньги выдерживают') : 'опоры просят паузу'}
+              </div>
               <h2>
-                {moneyIsSafe
-                  ? desireIsClear ? 'Похоже, вопрос уже не в деньгах.' : 'Деньги в порядке. Желанию можно дать время.'
+                {supportsAreSafe
+                  ? desireIsClear
+                    ? isAction ? 'Похоже, дело уже не в ограничениях.' : 'Похоже, вопрос уже не в деньгах.'
+                    : isAction ? 'Пространство есть. Желанию можно дать время.' : 'Деньги в порядке. Желанию можно дать время.'
                   : 'Отложить сейчас — не значит запретить навсегда.'}
               </h2>
               <p>
-                {moneyIsSafe
+                {supportsAreSafe
                   ? blocker
                     ? `Ты назвал(а), что мешает: «${blocker}». Это чувство реально — но оно не обязано принимать решение вместо тебя.`
-                    : 'Финансовые опоры на месте. Осталось только твоё собственное «да» или спокойное «не сейчас».'
+                    : isAction
+                      ? 'Реальные ограничения не мешают. Осталось только твоё собственное «да» или спокойное «не сейчас».'
+                      : 'Финансовые опоры на месте. Осталось только твоё собственное «да» или спокойное «не сейчас».'
                   : 'Сохранить желание и вернуться к нему позже — тоже решение в свою пользу, без стыда и наказания.'}
               </p>
 
-              {moneyIsSafe && desireIsClear ? (
+              {supportsAreSafe && desireIsClear ? (
                 <>
                   <button className="btn-primary decision-primary" onClick={allow} disabled={working}>
                     {working ? 'сохраняю…' : 'я разрешаю себе это'}
@@ -264,8 +304,10 @@ export function WishScreen({ wishId, onBack }: Props) {
             </section>
           )}
 
-          <button className="already-bought-link" onClick={markBought} disabled={working}>
-            уже купил(а)? отметить без дополнительных условий
+          <button className="already-bought-link" onClick={complete} disabled={working}>
+            {isAction
+              ? 'уже сделал(а)? отметить без дополнительных условий'
+              : 'уже купил(а)? отметить без дополнительных условий'}
           </button>
         </>
       )}
